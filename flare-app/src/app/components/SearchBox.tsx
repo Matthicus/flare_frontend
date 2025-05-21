@@ -24,15 +24,22 @@ const SearchBox = ({ onSelect }: Props) => {
   return (
     <div className="w-[300px] ">
       <form onSubmit={handleSearch}>
-        <input
-          type="text"
-          className="w-full bg-white border px-2 py-1 rounded-md"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search location"
-        />
+        <div className="relative w-full">
+          <img
+            src="/search.png"
+            alt="search"
+            className="absolute top-2 left-3 w-4"
+          />
+          <input
+            type="text"
+            className="w-full bg-accent-color border px-2 py-1 rounded-xl text-white pl-10 outline-none"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search location"
+          />
+        </div>
       </form>
-      <ul className="mt-2 bg-white text-black max h-40 overflow-y-auto text-sm">
+      <ul className="mt-2 bg-none text-white max h-40 overflow-y-auto text-sm">
         {results.map((result: any) => (
           <li
             key={result.id}

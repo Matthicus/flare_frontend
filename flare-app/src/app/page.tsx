@@ -19,7 +19,6 @@ export default async function Home() {
     <div className="p-10">
       <MainNavigation />
       <MapWrapper />
-      <FooterHome />
     </div>
   );
 }
