@@ -1,8 +1,7 @@
 "use client";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { useState } from "react";
-import { Map, Popup, Marker, ViewState } from "react-map-gl/mapbox";
-import SearchBox from "./SearchBox";
+import { ViewState } from "react-map-gl/mapbox";
 import FlareMap from "./FlareMap";
 import FooterHome from "./FooterHome";
 

@@ -2,6 +2,7 @@
 import { Map, Marker, Popup } from "react-map-gl/mapbox";
 import type { ViewState, MapMouseEvent } from "react-map-gl/mapbox";
 import { useState } from "react";
+import { imageConfigDefault } from "next/dist/shared/lib/image-config";
 
 type Flare = {
   id: number;
@@ -65,9 +66,15 @@ const FlareMap = ({ viewport, setViewport }: FlareMapProps) => {
           }}
         >
           <div className="text-2xl cursor-pointer">
-            {flare.type === "blue" && "🔵"}
-            {flare.type === "Violet" && "🟣"}
-            {flare.type === "regular" && "🟢"}
+            {flare.type === "blue" && (
+              <img className="w-8" src="/blue_flare.png" />
+            )}
+            {flare.type === "Violet" && (
+              <img className="w-8" src="/violet_flare.png" />
+            )}
+            {flare.type === "regular" && (
+              <img className="w-8" src="/orange_flare.png" />
+            )}
           </div>
         </Marker>
       ))}
