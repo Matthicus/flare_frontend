@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Map, Popup, Marker, ViewState } from "react-map-gl/mapbox";
 import SearchBox from "./SearchBox";
 import FlareMap from "./FlareMap";
+import FooterHome from "./FooterHome";
 
 const MapWrapper = () => {
   const [viewport, setViewport] = useState<ViewState>({
@@ -15,19 +16,21 @@ const MapWrapper = () => {
     padding: { top: 0, bottom: 0, left: 0, right: 0 },
   });
   return (
-    <div className="relative w-full h-[500px]">
-      <FlareMap viewport={viewport} setViewport={setViewport} />
-      <SearchBox
-        onSelect={(lng: number, lat: number) => {
+    <>
+      <div className="relative w-full h-[500px]">
+        <FlareMap viewport={viewport} setViewport={setViewport} />
+      </div>
+      <FooterHome
+        onSearchSelect={(lng, lat) =>
           setViewport((prev) => ({
             ...prev,
             latitude: lat,
             longitude: lng,
             zoom: 13,
-          }));
-        }}
+          }))
+        }
       />
-    </div>
+    </>
   );
 };
 

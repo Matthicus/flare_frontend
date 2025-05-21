@@ -22,17 +22,17 @@ const SearchBox = ({ onSelect }: Props) => {
   };
 
   return (
-    <div className="absolute z-10 top-2 left-2 bg-white p-2 rounded shadow w-[300px]">
+    <div className="w-[300px] ">
       <form onSubmit={handleSearch}>
         <input
           type="text"
-          className="w-full border px-2 py-1 rounded"
+          className="w-full bg-white border px-2 py-1 rounded-md"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search"
+          placeholder="Search location"
         />
       </form>
-      <ul className="mt-2 max h-40 overflow-y-auto text-sm">
+      <ul className="mt-2 bg-white text-black max h-40 overflow-y-auto text-sm">
         {results.map((result: any) => (
           <li
             key={result.id}

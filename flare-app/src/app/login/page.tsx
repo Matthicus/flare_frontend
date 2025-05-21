@@ -7,7 +7,12 @@ const Login = () => {
   useEffect(() => {
     testConnection();
   }, []);
-  return <div>checking for backend connection</div>;
+  return (
+    <div>
+      checking for backend connection
+      <h1>Login page</h1>
+    </div>
+  );
 };
 
 export default Login;
