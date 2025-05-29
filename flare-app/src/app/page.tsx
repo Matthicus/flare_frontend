@@ -1,8 +1,13 @@
 // zorgt ervoor dat alleen content area reload wordt bij verandering van pagina
 //next js components zijn server side by default
 
+import { use, useState } from "react";
+import { useEffect } from "react";
+
 import MapWrapper from "./components/MapWrapper";
 import MainNavigation from "./components/MainNavigation";
+import test from "node:test";
+import { testConnection } from "@/lib/axios";
 
 // type Flare = {
 //   id: number;

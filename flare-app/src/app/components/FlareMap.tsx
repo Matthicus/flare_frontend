@@ -2,15 +2,15 @@
 import { Map, Marker, Popup } from "react-map-gl/mapbox";
 import type { ViewState, MapMouseEvent } from "react-map-gl/mapbox";
 import { useState } from "react";
-import { imageConfigDefault } from "next/dist/shared/lib/image-config";
+import { postFlare } from "@/lib/axios"; // ✅ make sure this is correct
 
 type Flare = {
-  id: number;
+  id?: number;
   latitude: number;
   longitude: number;
-  place_name: string;
-  type: string;
   note: string;
+  category: "regular" | "blue" | "violet";
+  user_id?: number; // add user_id here for typing
 };
 
 type FlareMapProps = {
@@ -19,30 +19,45 @@ type FlareMapProps = {
 };
 
 const FlareMap = ({ viewport, setViewport }: FlareMapProps) => {
-  const [flares, setFlares] = useState<Flare[]>([
-    {
-      id: 1,
-      latitude: 51.22335005994285,
-      longitude: 4.408629844539046,
-      place_name: "Dolores Park",
-      type: "regular",
-      note: "Live music in the park",
-    },
-  ]);
-  const [selectedFlare, setSelectedFlare] = useState<Flare | null>(null);
+  const [flares, setFlares] = useState<Flare[]>([]);
+  const [newFlareLocation, setNewFlareLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+  const [note, setNote] = useState("");
+  const [category, setCategory] = useState<"regular" | "blue" | "violet">(
+    "regular"
+  );
+  const [submitting, setSubmitting] = useState(false);
 
   const handleMapClick = (e: MapMouseEvent) => {
-    const { lng, lat } = e.lngLat;
-    const newFlare: Flare = {
-      id: Date.now(),
-      latitude: lat,
-      longitude: lng,
-      place_name: "Custom Flare",
-      type: "blue",
-      note: "You dropped a flare here!",
-    };
-    setFlares((prev) => [...prev, newFlare]);
-    setSelectedFlare(newFlare);
+    const { lat, lng } = e.lngLat;
+    setNewFlareLocation({ lat, lng });
+    setNote("");
+    setCategory("regular");
+  };
+
+  const handleSubmit = async () => {
+    if (!newFlareLocation) return;
+
+    setSubmitting(true);
+    try {
+      const newFlare: Flare = {
+        latitude: newFlareLocation.lat,
+        longitude: newFlareLocation.lng,
+        note,
+        category,
+        user_id: 3, // <-- FIXED user_id for testing (replace with existing user id in your DB)
+      };
+
+      const saved = await postFlare(newFlare); // assumed to return the new Flare with ID
+      setFlares((prev) => [...prev, saved]);
+      setNewFlareLocation(null);
+    } catch (err: any) {
+      console.error("Failed to post flare:", err.message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -60,35 +75,52 @@ const FlareMap = ({ viewport, setViewport }: FlareMapProps) => {
           longitude={flare.longitude}
           latitude={flare.latitude}
           anchor="bottom"
-          onClick={(e) => {
-            e.originalEvent.stopPropagation();
-            setSelectedFlare(flare);
-          }}
         >
           <div className="text-2xl cursor-pointer">
-            {flare.type === "blue" && (
+            {flare.category === "blue" && (
               <img className="w-8" src="/blue_flare.png" />
             )}
-            {flare.type === "Violet" && (
+            {flare.category === "violet" && (
               <img className="w-8" src="/violet_flare.png" />
             )}
-            {flare.type === "regular" && (
+            {flare.category === "regular" && (
               <img className="w-8" src="/orange_flare.png" />
             )}
           </div>
         </Marker>
       ))}
 
-      {selectedFlare && (
+      {newFlareLocation && (
         <Popup
-          latitude={selectedFlare.latitude}
-          longitude={selectedFlare.longitude}
-          onClose={() => setSelectedFlare(null)}
+          latitude={newFlareLocation.lat}
+          longitude={newFlareLocation.lng}
+          onClose={() => setNewFlareLocation(null)}
           closeOnClick={false}
         >
-          <div>
-            <h3 className="font-bold">{selectedFlare.place_name}</h3>
-            <p>{selectedFlare.note}</p>
+          <div className="space-y-2">
+            <h3 className="font-semibold">Drop a Flare</h3>
+            <textarea
+              placeholder="Write a note..."
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              className="w-full p-1 rounded bg-gray-100 text-black"
+            />
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value as Flare["category"])}
+              className="w-full p-1 rounded bg-gray-100 text-black"
+            >
+              <option value="regular">Regular</option>
+              <option value="blue">Blue</option>
+              <option value="violet">Violet</option>
+            </select>
+            <button
+              onClick={handleSubmit}
+              disabled={submitting}
+              className="w-full py-1 bg-lime-400 rounded text-black font-semibold hover:bg-lime-300 transition"
+            >
+              {submitting ? "Posting..." : "Post Flare"}
+            </button>
           </div>
         </Popup>
       )}

@@ -1,24 +1,26 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import LoginForm from "../components/LoginForm";
 import RegisterForm from "../components/RegisterForm";
-// import testConnection from "../../lib/axios";
+import { testConnection } from "@/lib/axios"; // Import testConnection from "@/lib/axios";
 
 const Login = () => {
-  const [mode, setMode] = useState<"login" | "register">("login");
-  // useEffect(() => {
-  //   testConnection();
-  // }, []);
+  const [isRegistering, setIsRegistering] = useState(false);
+  useEffect(() => {
+    testConnection();
+  }, []);
+
   return (
-    <div>
-      {mode === "login" ? <LoginForm /> : <RegisterForm />}
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white space-y-6">
+      {isRegistering ? <RegisterForm /> : <LoginForm />}
+
       <button
-        className="mt-4 text-white bg-blue-600 px-4 py-2 rounded cursor-pointer"
-        onClick={() => setMode(mode === "login" ? "register" : "login")}
+        onClick={() => setIsRegistering((prev) => !prev)}
+        className="text-lime-400 hover:underline"
       >
-        {mode === "login"
-          ? "No account? Register"
-          : "Already registered? Login"}
+        {isRegistering
+          ? "Already have an account? Log in"
+          : "Don't have an account? Register"}
       </button>
     </div>
   );
