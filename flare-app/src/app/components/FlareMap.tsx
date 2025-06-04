@@ -1,8 +1,8 @@
 "use client";
 import { Map, Marker, Popup } from "react-map-gl/mapbox";
 import type { ViewState, MapMouseEvent } from "react-map-gl/mapbox";
-import { useState } from "react";
-import { postFlare } from "@/lib/axios"; // ✅ make sure this is correct
+import { useState, useEffect } from "react";
+import { postFlare } from "@/lib/axios";
 
 type Flare = {
   id?: number;
@@ -10,7 +10,12 @@ type Flare = {
   longitude: number;
   note: string;
   category: "regular" | "blue" | "violet";
-  user_id?: number; // add user_id here for typing
+  user_id?: number;
+  place_id?: number | null;
+  place?: {
+    mapbox_id: string;
+    name: string;
+  } | null;
 };
 
 type FlareMapProps = {
@@ -29,10 +34,54 @@ const FlareMap = ({ viewport, setViewport }: FlareMapProps) => {
     "regular"
   );
   const [submitting, setSubmitting] = useState(false);
+  const [selectedPlace, setSelectedPlace] = useState<{
+    mapbox_id: string;
+    name: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setViewport({
+            ...viewport,
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            zoom: 14, // zoom closer on user location
+          });
+        },
+        (error) => {
+          console.warn("Geolocation error:", error);
+          // fallback if needed, e.g. keep existing viewport or set to a default city
+        }
+      );
+    }
+  }, []);
 
   const handleMapClick = (e: MapMouseEvent) => {
-    const { lat, lng } = e.lngLat;
-    setNewFlareLocation({ lat, lng });
+    const map = e.target as mapboxgl.Map;
+    const features = map.queryRenderedFeatures(e.point, {
+      layers: ["poi-label"],
+    });
+
+    console.log("clicked features", features);
+
+    // Prefer features with a valid 'name_en' property
+    const placeFeature = features.find(
+      (f) => f.layer?.id === "poi-label" && f.properties?.["name_en"]
+    );
+
+    if (placeFeature) {
+      // Convert feature id to string or fallback
+      const mapbox_id = placeFeature.id?.toString() ?? crypto.randomUUID();
+      const name = placeFeature.properties?.["name_en"] as string;
+
+      setSelectedPlace({ mapbox_id, name });
+    } else {
+      setSelectedPlace(null);
+    }
+
+    setNewFlareLocation({ lat: e.lngLat.lat, lng: e.lngLat.lng });
     setNote("");
     setCategory("regular");
   };
@@ -42,17 +91,27 @@ const FlareMap = ({ viewport, setViewport }: FlareMapProps) => {
 
     setSubmitting(true);
     try {
-      const newFlare: Flare = {
+      const newFlarePayload = {
         latitude: newFlareLocation.lat,
         longitude: newFlareLocation.lng,
         note,
         category,
-        user_id: 3, // <-- FIXED user_id for testing (replace with existing user id in your DB)
+        user_id: 3, // replace with real auth later
+        // Send place as an object matching backend expected format
+        place: selectedPlace
+          ? {
+              mapbox_id: selectedPlace.mapbox_id,
+              name: selectedPlace.name,
+            }
+          : null,
       };
 
-      const saved = await postFlare(newFlare); // assumed to return the new Flare with ID
+      console.log("Posting flare with payload:", newFlarePayload);
+
+      const saved = await postFlare(newFlarePayload);
       setFlares((prev) => [...prev, saved]);
       setNewFlareLocation(null);
+      setSelectedPlace(null);
     } catch (err: any) {
       console.error("Failed to post flare:", err.message);
     } finally {
@@ -66,7 +125,7 @@ const FlareMap = ({ viewport, setViewport }: FlareMapProps) => {
       onMove={(evt) => setViewport(evt.viewState)}
       onClick={handleMapClick}
       mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
-      mapStyle="mapbox://styles/mastos/cmatncfmk000y01pa59lcd2zx"
+      mapStyle="mapbox://styles/mapbox/streets-v12"
       style={{ width: "100%", height: "100%" }}
     >
       {flares.map((flare) => (
@@ -99,6 +158,13 @@ const FlareMap = ({ viewport, setViewport }: FlareMapProps) => {
         >
           <div className="space-y-2">
             <h3 className="font-semibold">Drop a Flare</h3>
+
+            {selectedPlace && (
+              <div className="text-sm font-semibold text-blue-600">
+                {selectedPlace.name}
+              </div>
+            )}
+
             <textarea
               placeholder="Write a note..."
               value={note}
