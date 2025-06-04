@@ -9,13 +9,14 @@ type Flare = {
   latitude: number;
   longitude: number;
   note: string;
-  category: "regular" | "blue" | "violet";
+  category: "regular" | "blue" | "violet"; // will be calculated dynamically
   user_id?: number;
   place_id?: number | null;
   place?: {
     mapbox_id: string;
     name: string;
   } | null;
+  participantsCount?: number; // new
 };
 
 type FlareMapProps = {
@@ -47,6 +48,11 @@ const FlareMap = ({ viewport, setViewport }: FlareMapProps) => {
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<ViewState>(viewport);
+  const getCategory = (count: number = 0): Flare["category"] => {
+    if (count >= 100) return "blue";
+    if (count >= 18) return "violet";
+    return "regular";
+  };
 
   useEffect(() => {
     viewportRef.current = viewport;
@@ -145,13 +151,50 @@ const FlareMap = ({ viewport, setViewport }: FlareMapProps) => {
       };
 
       const saved = await postFlare(newFlarePayload);
-      setFlares((prev) => [...prev, saved]);
+
+      // Check if flare exists nearby
+      const existingFlareIndex = flares.findIndex(
+        (f) =>
+          Math.abs(f.latitude - newFlareLocation.lat) < 0.0001 &&
+          Math.abs(f.longitude - newFlareLocation.lng) < 0.0001
+      );
+
+      if (existingFlareIndex !== -1) {
+        const updatedFlares = [...flares];
+        const existingFlare = updatedFlares[existingFlareIndex];
+
+        existingFlare.participantsCount =
+          (existingFlare.participantsCount ?? 1) + 1;
+
+        // Recalculate category based on new count
+        existingFlare.category = getCategory(existingFlare.participantsCount);
+
+        setFlares(updatedFlares);
+      } else {
+        saved.participantsCount = 1;
+        saved.category = getCategory(1);
+        setFlares((prev) => [...prev, saved]);
+      }
+
       setNewFlareLocation(null);
       setSelectedPlace(null);
     } catch (err: any) {
       console.error("Failed to post flare:", err.message);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  // New function to handle "Add to Flare" button click
+  const handleAddToFlare = (flare: Flare) => {
+    setSelectedFlareId(null);
+    setNewFlareLocation({ lat: flare.latitude, lng: flare.longitude });
+    setNote("");
+    setCategory("regular");
+    if (flare.place) {
+      setSelectedPlace(flare.place);
+    } else {
+      setSelectedPlace(null);
     }
   };
 
@@ -263,7 +306,30 @@ const FlareMap = ({ viewport, setViewport }: FlareMapProps) => {
                   offset={[0, -10]}
                   className="flare-popup"
                 >
-                  <div>{flare.note}</div>
+                  <div className="space-y-2">
+                    <div>{flare.note}</div>
+
+                    {/* Add the counter display */}
+                    <div className="text-sm font-semibold text-yellow-300">
+                      Participants: {flare.participantsCount ?? 1} people
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        const url = `https://www.google.com/maps/dir/?api=1&destination=${flare.latitude},${flare.longitude}`;
+                        window.open(url, "_blank");
+                      }}
+                      className="w-full py-1 bg-blue-600 rounded text-white font-semibold hover:bg-blue-500 transition"
+                    >
+                      Navigate to
+                    </button>
+                    <button
+                      onClick={() => handleAddToFlare(flare)}
+                      className="w-full py-1 bg-green-600 rounded text-white font-semibold hover:bg-green-500 transition"
+                    >
+                      Add to Flare
+                    </button>
+                  </div>
                 </Popup>
               ))}
 
@@ -287,17 +353,6 @@ const FlareMap = ({ viewport, setViewport }: FlareMapProps) => {
                   onChange={(e) => setNote(e.target.value)}
                   className="w-full p-1 rounded bg-gray-100 text-black"
                 />
-                <select
-                  value={category}
-                  onChange={(e) =>
-                    setCategory(e.target.value as Flare["category"])
-                  }
-                  className="w-full p-1 rounded bg-gray-100 text-black"
-                >
-                  <option value="regular">Regular</option>
-                  <option value="blue">Blue</option>
-                  <option value="violet">Violet</option>
-                </select>
                 <button
                   onClick={handleSubmit}
                   disabled={submitting}
