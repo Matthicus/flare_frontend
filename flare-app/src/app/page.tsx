@@ -3,9 +3,7 @@
 
 import { use, useState } from "react";
 import { useEffect } from "react";
-
-import MapWrapper from "./components/MapWrapper";
-import MainNavigation from "./components/MainNavigation";
+import MainLayout from "./components/MainLayout";
 import test from "node:test";
 import { testConnection } from "@/lib/axios";
 
@@ -19,10 +17,5 @@ import { testConnection } from "@/lib/axios";
 // };
 
 export default async function Home() {
-  return (
-    <div className="p-10">
-      <MainNavigation />
-      <MapWrapper />
-    </div>
-  );
+  return <MainLayout />;
 }
