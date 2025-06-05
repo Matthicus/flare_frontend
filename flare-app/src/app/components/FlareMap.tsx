@@ -3,6 +3,7 @@ import { Map, Marker, Popup } from "react-map-gl/mapbox";
 import type { ViewState, MapMouseEvent } from "react-map-gl/mapbox";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { postFlare } from "@/lib/axios";
+import { postFlareWithPhoto } from "@/lib/axios";
 
 type Flare = {
   id?: number;
@@ -17,6 +18,7 @@ type Flare = {
     name: string;
   } | null;
   participantsCount?: number; // new
+  photo_url?: string | null;
 };
 
 type FlareMapProps = {
@@ -31,6 +33,8 @@ const FlareMap = ({ viewport, setViewport }: FlareMapProps) => {
     lat: number;
     lng: number;
   } | null>(null);
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [showPhoto, setShowPhoto] = useState(false);
   const [note, setNote] = useState("");
   const [category, setCategory] = useState<"regular" | "blue" | "violet">(
     "regular"
@@ -139,7 +143,7 @@ const FlareMap = ({ viewport, setViewport }: FlareMapProps) => {
     if (!newFlareLocation) return;
     setSubmitting(true);
     try {
-      const newFlarePayload = {
+      const flareData = {
         latitude: newFlareLocation.lat,
         longitude: newFlareLocation.lng,
         note,
@@ -150,9 +154,10 @@ const FlareMap = ({ viewport, setViewport }: FlareMapProps) => {
           : null,
       };
 
-      const saved = await postFlare(newFlarePayload);
+      const saved = photo
+        ? await postFlareWithPhoto(flareData, photo)
+        : await postFlare(flareData);
 
-      // Check if flare exists nearby
       const existingFlareIndex = flares.findIndex(
         (f) =>
           Math.abs(f.latitude - newFlareLocation.lat) < 0.0001 &&
@@ -165,8 +170,6 @@ const FlareMap = ({ viewport, setViewport }: FlareMapProps) => {
 
         existingFlare.participantsCount =
           (existingFlare.participantsCount ?? 1) + 1;
-
-        // Recalculate category based on new count
         existingFlare.category = getCategory(existingFlare.participantsCount);
 
         setFlares(updatedFlares);
@@ -178,6 +181,7 @@ const FlareMap = ({ viewport, setViewport }: FlareMapProps) => {
 
       setNewFlareLocation(null);
       setSelectedPlace(null);
+      setPhoto(null); // clear after upload
     } catch (err: any) {
       console.error("Failed to post flare:", err.message);
     } finally {
@@ -300,7 +304,10 @@ const FlareMap = ({ viewport, setViewport }: FlareMapProps) => {
                   key={flare.id}
                   latitude={flare.latitude}
                   longitude={flare.longitude}
-                  onClose={() => setSelectedFlareId(null)}
+                  onClose={() => {
+                    setSelectedFlareId(null);
+                    setShowPhoto(false);
+                  }}
                   closeOnClick={false}
                   anchor="top"
                   offset={[0, -10]}
@@ -309,10 +316,28 @@ const FlareMap = ({ viewport, setViewport }: FlareMapProps) => {
                   <div className="space-y-2">
                     <div>{flare.note}</div>
 
-                    {/* Add the counter display */}
                     <div className="text-sm font-semibold text-yellow-300">
                       Participants: {flare.participantsCount ?? 1} people
                     </div>
+
+                    {/* Toggle photo menu */}
+                    {flare.photo_url && (
+                      <button
+                        onClick={() => setShowPhoto((prev) => !prev)}
+                        className="w-full py-1 bg-purple-600 rounded text-white font-semibold hover:bg-purple-500 transition"
+                      >
+                        {showPhoto ? "Hide Photo" : "View Photo"}
+                      </button>
+                    )}
+
+                    {/* Show photo */}
+                    {showPhoto && flare.photo_url && (
+                      <img
+                        src={flare.photo_url}
+                        alt="Flare Photo"
+                        className="w-full h-auto rounded shadow"
+                      />
+                    )}
 
                     <button
                       onClick={() => {
@@ -337,7 +362,10 @@ const FlareMap = ({ viewport, setViewport }: FlareMapProps) => {
             <Popup
               latitude={newFlareLocation.lat}
               longitude={newFlareLocation.lng}
-              onClose={() => setNewFlareLocation(null)}
+              onClose={() => {
+                setNewFlareLocation(null);
+                setPhoto(null);
+              }}
               closeOnClick={false}
             >
               <div className="space-y-2">
@@ -353,6 +381,19 @@ const FlareMap = ({ viewport, setViewport }: FlareMapProps) => {
                   onChange={(e) => setNote(e.target.value)}
                   className="w-full p-1 rounded bg-gray-100 text-black"
                 />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setPhoto(e.target.files?.[0] || null)}
+                  className="w-full text-sm"
+                />
+                {photo && (
+                  <img
+                    src={URL.createObjectURL(photo)}
+                    alt="Preview"
+                    className="w-full h-auto rounded"
+                  />
+                )}
                 <button
                   onClick={handleSubmit}
                   disabled={submitting}

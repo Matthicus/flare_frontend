@@ -126,6 +126,78 @@ export async function postFlare(data: any): Promise<any> {
     }
   }
 
+  export async function searchNearbyKnownPlaces(
+  latitude: number,
+  longitude: number,
+  radius: number = 200
+): Promise<any> {
+  try {
+    const response = await api.get('/known-places/nearby', {
+      params: { latitude, longitude, radius },
+    });
+    console.log('[KNOWN PLACES] Nearby search result:', response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('[KNOWN PLACES] Search failed:', error.response?.data || error.message);
+    throw error;
+  }
+}
+
+export async function fetchAllKnownPlaces(): Promise<any[]> {
+  try {
+    const res = await api.get("/known-places"); // you'll need to add this backend route
+    return res.data;
+  } catch (error: any) {
+    console.error("Failed to fetch known places:", error.response?.data || error.message);
+    throw error;
+  }
+}
+
+export async function postFlareWithPhoto(data: any, photo: File) {
+  try {
+    const formData = new FormData();
+
+    // Required fields
+    formData.append("latitude", data.latitude);
+    formData.append("longitude", data.longitude);
+    formData.append("note", data.note);
+    formData.append("user_id", data.user_id); // Replace with auth logic if needed
+
+    // Optional category
+    if (data.category) {
+      formData.append("category", data.category);
+    }
+
+    // Optional place fields (as array-style inputs Laravel understands)
+    if (data.place) {
+      formData.append("place[mapbox_id]", data.place.mapbox_id);
+      formData.append("place[name]", data.place.name);
+    }
+
+    // Add photo
+    if (photo) {
+      formData.append("photo", photo);
+    }
+
+    const response = await api.post("/flares", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      withCredentials: true,
+    });
+
+    console.log("[FLARES] Flare with photo posted:", response.data);
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      throw new Error(error.response.data.message || "Failed to post flare with photo");
+    }
+    throw new Error("Network error while posting flare with photo");
+  }
+}
+
+
+
 
 export default api;
 

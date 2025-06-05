@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import LoadingScreen from "./LoadingScreen";
 import MapWrapper from "./MapWrapper";
 import MainNavigation from "./MainNavigation";
+import NearbySearchForm from "./NearbySearchForm";
 
 const MainLayout = () => {
   const [loading, setLoading] = useState(true);
@@ -35,6 +36,7 @@ const MainLayout = () => {
     <div className="p-10">
       <MainNavigation />
       <MapWrapper />
+      <NearbySearchForm />
     </div>
   );
 };
