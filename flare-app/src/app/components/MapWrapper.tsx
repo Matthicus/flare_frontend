@@ -16,7 +16,7 @@ const MapWrapper = () => {
   });
   return (
     <>
-      <div className="relative w-full h-[500px]">
+      <div className="relative w-screen h-screen">
         <FlareMap viewport={viewport} setViewport={setViewport} />
       </div>
       <FooterHome

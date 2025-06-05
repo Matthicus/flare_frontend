@@ -33,10 +33,12 @@ const MainLayout = () => {
   }
 
   return (
-    <div className="p-10">
-      <MainNavigation />
+    <div className="w-screen h-screen">
       <MapWrapper />
-      <NearbySearchForm />
+
+      <div className="absolute top-0 left-0 w-full z-10">
+        <MainNavigation />
+      </div>
     </div>
   );
 };

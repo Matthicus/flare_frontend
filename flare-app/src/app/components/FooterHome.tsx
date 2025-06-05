@@ -5,13 +5,7 @@ type FooterProps = {
 };
 
 const FooterHome = ({ onSearchSelect }: FooterProps) => {
-  return (
-    <footer className="pt-5">
-      <div>
-        <SearchBox onSelect={onSearchSelect} />
-      </div>
-    </footer>
-  );
+  return <div></div>;
 };
 
 export default FooterHome;
