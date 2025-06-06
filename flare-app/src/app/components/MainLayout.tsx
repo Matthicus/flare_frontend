@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import LoadingScreen from "./LoadingScreen";
 import MapWrapper from "./MapWrapper";
 import AuthBtns from "./AuthBtns";
+import Logo from "./Logo";
 import NearbySearchForm from "./NearbySearchForm";
 
 const MainLayout = () => {
@@ -38,6 +39,7 @@ const MainLayout = () => {
       <div className="absolute top-4 left-0 w-full z-10 flex justify-end px-4">
         <AuthBtns />
       </div>{" "}
+      <Logo />
     </div>
   );
 };

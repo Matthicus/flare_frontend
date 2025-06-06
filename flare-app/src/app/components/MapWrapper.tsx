@@ -3,7 +3,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { useState, useEffect } from "react";
 import { ViewState } from "react-map-gl/mapbox";
 import FlareMap from "./FlareMap";
-import FooterHome from "./FooterHome";
+import SearchBox from "./SearchBox";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import EnableLocation from "./EnableLocation";
 
@@ -44,21 +44,23 @@ const MapWrapper = () => {
           setViewport={setViewport}
           userLocation={userLocation}
         />
-        <EnableLocation
-          onEnable={() => setLocationEnabled(true)}
-          enabled={locationEnabled}
-        />
+        <div className="absolute top-4 left-4 z-40 flex gap-10">
+          <EnableLocation
+            onEnable={() => setLocationEnabled(true)}
+            enabled={locationEnabled}
+          />
+          <SearchBox
+            onSelect={(lng, lat) =>
+              setViewport((prev) => ({
+                ...prev,
+                latitude: lat,
+                longitude: lng,
+                zoom: 13,
+              }))
+            }
+          />
+        </div>
       </div>
-      <FooterHome
-        onSearchSelect={(lng, lat) =>
-          setViewport((prev) => ({
-            ...prev,
-            latitude: lat,
-            longitude: lng,
-            zoom: 13,
-          }))
-        }
-      />
     </>
   );
 };

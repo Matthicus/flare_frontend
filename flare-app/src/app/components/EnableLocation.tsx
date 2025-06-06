@@ -10,8 +10,8 @@ const EnableLocation = ({ onEnable, enabled }: Props) => {
         onClick={onEnable}
         className={`transition rounded px-4 py-2 flex items-center ${
           enabled
-            ? "bg-blue-900 hover:bg-blue-800 text-white cursor-pointer"
-            : "bg-orange-500 hover:bg-orange-400 text-black cursor-pointer"
+            ? "bg-accent-color hover:bg-text-orange text-white cursor-pointer"
+            : "bg-text-orange hover:bg-accent-color text-black cursor-pointer"
         }`}
       >
         <img
