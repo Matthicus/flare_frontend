@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import LoadingScreen from "./LoadingScreen";
 import MapWrapper from "./MapWrapper";
-import MainNavigation from "./MainNavigation";
+import AuthBtns from "./AuthBtns";
 import NearbySearchForm from "./NearbySearchForm";
 
 const MainLayout = () => {
@@ -33,12 +33,11 @@ const MainLayout = () => {
   }
 
   return (
-    <div className="w-screen h-screen">
+    <div className=" relative w-screen h-screen">
       <MapWrapper />
-
-      <div className="absolute top-0 left-0 w-full z-10">
-        <MainNavigation />
-      </div>
+      <div className="absolute top-4 left-0 w-full z-10 flex justify-end px-4">
+        <AuthBtns />
+      </div>{" "}
     </div>
   );
 };

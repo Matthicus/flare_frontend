@@ -1,9 +1,11 @@
 "use client";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ViewState } from "react-map-gl/mapbox";
 import FlareMap from "./FlareMap";
 import FooterHome from "./FooterHome";
+import { useGeolocation } from "@/hooks/useGeolocation";
+import EnableLocation from "./EnableLocation";
 
 const MapWrapper = () => {
   const [viewport, setViewport] = useState<ViewState>({
@@ -14,10 +16,38 @@ const MapWrapper = () => {
     pitch: 0,
     padding: { top: 0, bottom: 0, left: 0, right: 0 },
   });
+
+  const [locationEnabled, setLocationEnabled] = useState(false);
+  const userLocation = useGeolocation(locationEnabled);
+
+  useEffect(() => {
+    console.log("userLocation:", userLocation);
+    if (
+      userLocation &&
+      userLocation.lat !== undefined &&
+      userLocation.lng !== undefined
+    ) {
+      setViewport((prev) => ({
+        ...prev,
+        latitude: userLocation.lat,
+        longitude: userLocation.lng,
+        zoom: 14,
+      }));
+    }
+  }, [userLocation]);
+
   return (
     <>
       <div className="relative w-screen h-screen">
-        <FlareMap viewport={viewport} setViewport={setViewport} />
+        <FlareMap
+          viewport={viewport}
+          setViewport={setViewport}
+          userLocation={userLocation}
+        />
+        <EnableLocation
+          onEnable={() => setLocationEnabled(true)}
+          enabled={locationEnabled}
+        />
       </div>
       <FooterHome
         onSearchSelect={(lng, lat) =>

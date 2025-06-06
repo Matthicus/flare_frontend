@@ -24,10 +24,11 @@ type Flare = {
 type FlareMapProps = {
   viewport: ViewState;
   setViewport: (v: ViewState) => void;
+  userLocation: { lat: number; lng: number } | null;
   onMapLoad?: () => void;
 };
 
-const FlareMap = ({ viewport, setViewport }: FlareMapProps) => {
+const FlareMap = ({ viewport, setViewport, userLocation }: FlareMapProps) => {
   const [flares, setFlares] = useState<Flare[]>([]);
   const [newFlareLocation, setNewFlareLocation] = useState<{
     lat: number;
@@ -44,10 +45,7 @@ const FlareMap = ({ viewport, setViewport }: FlareMapProps) => {
     mapbox_id: string;
     name: string;
   } | null>(null);
-  const [userLocation, setUserLocation] = useState<{
-    lat: number;
-    lng: number;
-  } | null>(null);
+
   const [selectedFlareId, setSelectedFlareId] = useState<number | null>(null);
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -61,36 +59,6 @@ const FlareMap = ({ viewport, setViewport }: FlareMapProps) => {
   useEffect(() => {
     viewportRef.current = viewport;
   }, [viewport]);
-
-  useEffect(() => {
-    if (!("geolocation" in navigator)) return;
-
-    let didSetInitialCenter = false;
-    const watcherId = navigator.geolocation.watchPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        setUserLocation({ lat: latitude, lng: longitude });
-
-        if (!didSetInitialCenter) {
-          setViewport({
-            ...viewportRef.current,
-            latitude,
-            longitude,
-            zoom: 14,
-          });
-          didSetInitialCenter = true;
-        } else {
-          setViewport({ ...viewportRef.current, latitude, longitude });
-        }
-      },
-      () => {},
-      { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
-    );
-
-    return () => {
-      navigator.geolocation.clearWatch(watcherId);
-    };
-  }, [setViewport]);
 
   useEffect(() => {
     const saved = localStorage.getItem("flares");
