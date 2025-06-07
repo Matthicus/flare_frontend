@@ -15,7 +15,7 @@ const MainLayout = () => {
     const timer = setTimeout(() => {
       setFadeOut(true);
       setTimeout(() => setLoading(false), 300); // wait for fade-out
-    }, 1000);
+    }, 1500);
 
     return () => clearTimeout(timer);
   }, []);
@@ -23,12 +23,12 @@ const MainLayout = () => {
   if (loading) {
     return (
       <div
-        className={`fixed inset-0 flex flex-col gap-3 items-center justify-center bg-[#f5f5dc] z-50 transition-opacity duration-500 ${
+        className={`fixed inset-0 flex flex-col gap-3 items-center justify-center bg-accent-color z-50 transition-opacity duration-500 ${
           fadeOut ? "opacity-0" : "opacity-100"
         }`}
       >
         <img src="/logo.png" alt="Logo" className="w-20 h-20 animate-fade-in" />
-        <h1 className="animate-fade-in">Loading Flare..</h1>
+        <h1 className="animate-fade-in text-white">Loading Flare..</h1>
       </div>
     );
   }

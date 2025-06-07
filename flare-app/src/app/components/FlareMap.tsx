@@ -5,6 +5,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { postFlare } from "@/lib/axios";
 import { postFlareWithPhoto } from "@/lib/axios";
 import Modal from "./Modal";
+import { deleteFlare } from "@/lib/axios";
 
 type Flare = {
   id?: number;
@@ -194,6 +195,21 @@ const FlareMap = ({ viewport, setViewport, userLocation }: FlareMapProps) => {
     };
   }, [handleClickAway]);
 
+  const handleDeleteFlare = async (id: number) => {
+    try {
+      setSubmitting(true);
+      await deleteFlare(id);
+
+      setFlares((prev) => prev.filter((flare) => flare.id !== id));
+      setSelectedFlareId(null);
+      setShowPhoto(false);
+    } catch (err: any) {
+      console.error("Failed to delete flare:", err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <>
       <style>
@@ -218,6 +234,11 @@ const FlareMap = ({ viewport, setViewport, userLocation }: FlareMapProps) => {
             white-space: pre-wrap;
             word-break: break-word;
           }
+             .mapboxgl-popup-close-button {
+              font-size: 24px;
+              top: 8px;
+              right: 10px;
+    }
         `}
       </style>
 
@@ -279,7 +300,7 @@ const FlareMap = ({ viewport, setViewport, userLocation }: FlareMapProps) => {
                   }}
                   closeOnClick={false}
                   anchor="top"
-                  offset={[0, -10]}
+                  offset={[0, -1]}
                   className="flare-popup"
                 >
                   <div className="space-y-2">
@@ -287,6 +308,7 @@ const FlareMap = ({ viewport, setViewport, userLocation }: FlareMapProps) => {
                       <p className="text-xl font-semibold">
                         Title: {flare.note}
                       </p>
+                      <p>At: {flare.place?.name || "No place selected"}</p>
                     </div>
 
                     <div className="text-sm font-semibold text-yellow-300">
@@ -326,6 +348,13 @@ const FlareMap = ({ viewport, setViewport, userLocation }: FlareMapProps) => {
                       className="w-full py-1 bg-green-600 rounded text-white font-semibold hover:bg-green-500 transition"
                     >
                       Add to Flare
+                    </button>
+                    <button
+                      onClick={() => handleDeleteFlare(flare.id!)}
+                      disabled={submitting}
+                      className="w-full py-1 bg-red-600 rounded text-white font-semibold hover:bg-red-500 transition"
+                    >
+                      {submitting ? "Deleting..." : "Delete Flare"}
                     </button>
                   </div>
                 </Popup>

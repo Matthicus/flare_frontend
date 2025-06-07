@@ -54,7 +54,7 @@ const SearchBox = ({ onSelect }: Props) => {
         onSubmit={handleSearch}
         className={`ml-2 overflow-hidden transition-[width,opacity] duration-300 ease-in-out ${
           open
-            ? "w-72 opacity-100 pointer-events-auto"
+            ? "w-32 sm:w-72 opacity-100 pointer-events-auto"
             : "w-0 opacity-0 pointer-events-none"
         }`}
         style={{ flexShrink: 0 }}
@@ -71,7 +71,7 @@ const SearchBox = ({ onSelect }: Props) => {
 
       {/* Results dropdown */}
       {open && results.length > 0 && (
-        <ul className="absolute top-full mt-1 left-12 w-72 bg-[#000718] rounded-xl shadow-lg p-3 max-h-40 overflow-y-auto text-white text-sm">
+        <ul className="absolute top-full mt-1 left-12 w-48 sm:w-72 bg-[#000718] rounded-xl shadow-lg p-3 max-h-40 overflow-y-auto text-white text-sm">
           {results.map((result) => (
             <li
               key={result.id}

@@ -196,6 +196,22 @@ export async function postFlareWithPhoto(data: any, photo: File) {
   }
 }
 
+export async function deleteFlare(id: number): Promise<any> {
+  try {
+    const response = await api.delete(`/flares/${id}`, {
+      withCredentials: true, // make sure cookies/auth are sent if needed
+    });
+    console.log(`[FLARES] Flare ${id} deleted`, response.data);
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      throw new Error(error.response.data.message || "Failed to delete flare");
+    }
+    throw new Error("Network error while deleting flare");
+  }
+}
+
+
 
 
 
