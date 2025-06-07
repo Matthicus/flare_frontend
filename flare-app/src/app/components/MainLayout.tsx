@@ -1,45 +1,60 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import LoadingScreen from "./LoadingScreen";
-import MapWrapper from "./MapWrapper";
-import AuthBtns from "./AuthBtns";
+import HotFlares from "./HotFlares";
 import Logo from "./Logo";
-import NearbySearchForm from "./NearbySearchForm";
+import { Flare } from "./HotFlares";
 
 const MainLayout = () => {
-  const [loading, setLoading] = useState(true);
-  const [fadeOut, setFadeOut] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setFadeOut(true);
-      setTimeout(() => setLoading(false), 300); // wait for fade-out
-    }, 1500);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (loading) {
-    return (
-      <div
-        className={`fixed inset-0 flex flex-col gap-3 items-center justify-center bg-accent-color z-50 transition-opacity duration-500 ${
-          fadeOut ? "opacity-0" : "opacity-100"
-        }`}
-      >
-        <img src="/logo.png" alt="Logo" className="w-20 h-20 animate-fade-in" />
-        <h1 className="animate-fade-in text-white">Loading Flare..</h1>
-      </div>
-    );
-  }
+  const dummyFlares: Flare[] = [
+    {
+      id: 1,
+      latitude: 40.7128,
+      longitude: -74.006,
+      note: "Street performance going on!",
+      category: "regular",
+      participantsCount: 14,
+      place: { name: "Times Square" },
+    },
+    {
+      id: 2,
+      latitude: 34.0522,
+      longitude: -118.2437,
+      note: "Skate jam at the park",
+      category: "blue",
+      participantsCount: 11,
+      place: { name: "Venice Beach" },
+    },
+    {
+      id: 3,
+      latitude: 51.5074,
+      longitude: -0.1278,
+      note: "Open mic night",
+      category: "violet",
+      participantsCount: 9,
+      place: { name: "Soho Pub" },
+    },
+    {
+      id: 4,
+      latitude: 48.8566,
+      longitude: 2.3522,
+      note: "Outdoor film screening",
+      category: "regular",
+      participantsCount: 8,
+      place: { name: "Parc de la Villette" },
+    },
+    {
+      id: 5,
+      latitude: 35.6895,
+      longitude: 139.6917,
+      note: "Dance circle forming",
+      category: "blue",
+      participantsCount: 7,
+      place: { name: "Shibuya Crossing" },
+    },
+  ];
 
   return (
-    <div className=" relative w-screen h-screen">
-      <MapWrapper />
-      <div className="absolute top-4 left-0 w-full z-10 flex justify-end px-4">
-        <AuthBtns />
-      </div>{" "}
+    <div className="relative w-screen h-screen">
       <Logo />
+      <HotFlares flares={dummyFlares} />
     </div>
   );
 };
