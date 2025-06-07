@@ -4,6 +4,7 @@ import type { ViewState, MapMouseEvent } from "react-map-gl/mapbox";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { postFlare } from "@/lib/axios";
 import { postFlareWithPhoto } from "@/lib/axios";
+import Modal from "./Modal";
 
 type Flare = {
   id?: number;
@@ -208,7 +209,7 @@ const FlareMap = ({ viewport, setViewport, userLocation }: FlareMapProps) => {
           }
 
           .flare-popup > div {
-            background: rgba(0, 0, 0, 0.75) !important;
+            background: #192736;
             color: white !important;
             max-width: 16rem;
             padding: 1rem;
@@ -282,7 +283,11 @@ const FlareMap = ({ viewport, setViewport, userLocation }: FlareMapProps) => {
                   className="flare-popup"
                 >
                   <div className="space-y-2">
-                    <div>{flare.note}</div>
+                    <div>
+                      <p className="text-xl font-semibold">
+                        Title: {flare.note}
+                      </p>
+                    </div>
 
                     <div className="text-sm font-semibold text-yellow-300">
                       Participants: {flare.participantsCount ?? 1} people
@@ -327,34 +332,45 @@ const FlareMap = ({ viewport, setViewport, userLocation }: FlareMapProps) => {
               ))}
 
           {newFlareLocation && (
-            <Popup
-              latitude={newFlareLocation.lat}
-              longitude={newFlareLocation.lng}
+            <Modal
               onClose={() => {
                 setNewFlareLocation(null);
                 setPhoto(null);
               }}
-              closeOnClick={false}
             >
-              <div className="space-y-2">
-                <h3 className="font-semibold text-black">Drop a Flare</h3>
+              <div className="space-y-5 p-2">
+                <h1 className="font-semibold text-white text-2xl text-center">
+                  Drop a Flare
+                </h1>
                 {selectedPlace && (
                   <div className="text-sm font-semibold text-blue-600">
                     {selectedPlace.name}
                   </div>
                 )}
-                <textarea
-                  placeholder="Write a note..."
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  className="w-full p-1 rounded bg-gray-100 text-black"
-                />
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setPhoto(e.target.files?.[0] || null)}
-                  className="w-full text-sm"
-                />
+                <div className="space-y-2">
+                  <h3 className="text-white">Describe your flare</h3>
+                  <p className="text-sm text-gray-400">
+                    Briefly describe your flare so others know what to expect.
+                  </p>
+                  <textarea
+                    placeholder="Write a note..."
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    className="w-full p-2 rounded bg-gray-700 text-white resize-none"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-white">Upload a photo</h3>
+                  <p className="text-sm text-gray-400">
+                    Upload a photo to visualize your flare!
+                  </p>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setPhoto(e.target.files?.[0] || null)}
+                    className="w-full text-sm bg-gray-700 p-2 text-white rounded-md"
+                  />
+                </div>
                 {photo && (
                   <img
                     src={URL.createObjectURL(photo)}
@@ -365,12 +381,12 @@ const FlareMap = ({ viewport, setViewport, userLocation }: FlareMapProps) => {
                 <button
                   onClick={handleSubmit}
                   disabled={submitting}
-                  className="w-full py-1 bg-lime-400 rounded text-black font-semibold hover:bg-lime-300 transition"
+                  className="w-full py-1 bg-text-orange rounded text-white font-semibold hover:bg-orange-100 transition cursor-pointer"
                 >
                   {submitting ? "Posting..." : "Post Flare"}
                 </button>
               </div>
-            </Popup>
+            </Modal>
           )}
 
           {userLocation && (
