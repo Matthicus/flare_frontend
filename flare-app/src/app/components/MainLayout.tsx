@@ -1,6 +1,7 @@
 import HotFlares from "./HotFlares";
 import Logo from "./Logo";
 import { Flare } from "./HotFlares";
+import MapWrapper from "./MapWrapper";
 
 const MainLayout = () => {
   const dummyFlares: Flare[] = [
@@ -55,6 +56,7 @@ const MainLayout = () => {
     <div className="relative w-screen h-screen">
       <Logo />
       <HotFlares flares={dummyFlares} />
+      <MapWrapper />
     </div>
   );
 };

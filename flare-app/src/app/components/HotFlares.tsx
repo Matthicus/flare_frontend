@@ -27,7 +27,7 @@ const HotFlares = ({ flares, onFlyToFlare }: HotFlaresProps) => {
   if (hottest.length === 0) return null;
 
   return (
-    <div className="absolute bottom-6 right-6 bg-[#192736] text-white p-4 rounded-xl shadow-xl w-72 z-50">
+    <div className="absolute bottom-6 right-6 bg-[#192736]/70 text-white p-4 rounded-xl shadow-xl w-72 z-50">
       <h2 className="text-lg font-bold mb-3 text-yellow-400">
         🔥 Hottest Flares
       </h2>

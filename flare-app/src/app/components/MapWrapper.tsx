@@ -6,6 +6,7 @@ import FlareMap from "./FlareMap";
 import SearchBox from "./SearchBox";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import EnableLocation from "./EnableLocation";
+import AuthBtns from "./AuthBtns";
 
 const MapWrapper = () => {
   const [viewport, setViewport] = useState<ViewState>({
@@ -44,7 +45,8 @@ const MapWrapper = () => {
           setViewport={setViewport}
           userLocation={userLocation}
         />
-        <div className="absolute top-4 left-4 z-40 flex gap-10">
+
+        <div className="absolute top-4 left-4 z-40 flex gap-4">
           <EnableLocation
             onEnable={() => setLocationEnabled(true)}
             enabled={locationEnabled}
@@ -59,6 +61,10 @@ const MapWrapper = () => {
               }))
             }
           />
+        </div>
+
+        <div className="absolute top-4 right-4 z-40">
+          <AuthBtns />
         </div>
       </div>
     </>
