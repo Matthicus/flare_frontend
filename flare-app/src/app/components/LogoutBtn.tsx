@@ -1,10 +1,9 @@
 "use client";
-import { useRouter } from "next/navigation";
+
 import { logout } from "@/lib/axios";
 import { useState } from "react";
 
 const LogoutBtn = () => {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -13,7 +12,8 @@ const LogoutBtn = () => {
     setLoading(true);
     try {
       await logout();
-      router.push("/auth");
+      localStorage.removeItem("loggedIn");
+      window.location.reload();
     } catch (err: any) {
       setError(err.message);
     } finally {

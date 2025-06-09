@@ -1,9 +1,14 @@
 "use client";
 import React, { useState, useEffect, useContext } from "react";
 import { login, fetchCurrentUser, getUserFlares } from "../../lib/axios";
-import { UserContext } from "@/context/UserContext"; // adjust path accordingly
+import { UserContext } from "@/context/UserContext";
 
-const LoginForm = () => {
+type Props = {
+  onClose?: () => void;
+  onToggleForm?: () => void;
+};
+
+const LoginForm = ({ onClose, onToggleForm }: Props) => {
   const { user, setUser } = useContext(UserContext);
 
   const [email, setEmail] = useState("");
@@ -23,6 +28,8 @@ const LoginForm = () => {
       const currentUser = await fetchCurrentUser();
       setUser(currentUser);
       console.log("Logged in user:", currentUser);
+      localStorage.setItem("loggedIn", "true");
+      window.location.reload();
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || "Login failed");
     } finally {
@@ -53,77 +60,89 @@ const LoginForm = () => {
 
   if (user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
-        <div className="w-full max-w-sm">
-          <div className="bg-green-700 p-6 rounded shadow-md text-center space-y-4">
-            <h2 className="text-xl font-bold">Welcome, {user.name}!</h2>
-
-            <div className="bg-gray-800 p-4 rounded text-left max-h-60 overflow-y-auto">
-              <h3 className="text-lg font-semibold mb-2">Your Flares:</h3>
-              {flaresLoading ? (
-                <p className="text-gray-400">Loading flares...</p>
-              ) : flares.length > 0 ? (
-                <ul className="list-disc list-inside space-y-1">
-                  {flares.map((flare, index) => (
-                    <li key={flare.id || index} className="break-words">
-                      📍 <strong>Category:</strong> {flare.category || "N/A"}{" "}
-                      <br />
-                      <strong>Note:</strong> {flare.note || "No note"} <br />
-                      <small>
-                        Lat: {flare.latitude}, Lon: {flare.longitude}
-                      </small>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-gray-400">No flares found.</p>
-              )}
-            </div>
-          </div>
+      <div className="text-white space-y-4">
+        <h2 className="text-xl font-bold">Welcome, {user.name}!</h2>
+        <div className="bg-gray-800 p-4 rounded text-left max-h-60 overflow-y-auto">
+          <h3 className="text-lg font-semibold mb-2">Your Flares:</h3>
+          {flaresLoading ? (
+            <p className="text-gray-400">Loading flares...</p>
+          ) : flares.length > 0 ? (
+            <ul className="list-disc list-inside space-y-1">
+              {flares.map((flare, index) => (
+                <li key={flare.id || index} className="break-words">
+                  📍 <strong>Category:</strong> {flare.category || "N/A"} <br />
+                  <strong>Note:</strong> {flare.note || "No note"} <br />
+                  <small>
+                    Lat: {flare.latitude}, Lon: {flare.longitude}
+                  </small>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-gray-400">No flares found.</p>
+          )}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
-      <div className="w-full max-w-sm">
-        <form
-          onSubmit={handleLogin}
-          className="bg-gray-800 p-8 rounded shadow-md space-y-4"
+    <form
+      onSubmit={handleLogin}
+      className="relative bg-gray-800 text-white p-6 rounded-xl shadow-lg space-y-4 w-full"
+    >
+      {/* Close Button */}
+      {onClose && (
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute top-3 right-3 text-white text-3xl hover:text-text-orange cursor-pointer"
         >
-          <h1 className="text-2xl font-bold">Login</h1>
+          &times;
+        </button>
+      )}
 
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-2 rounded bg-gray-700 focus:outline-none"
-            required
-          />
+      <h1 className="text-2xl font-bold text-center">Login</h1>
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-2 rounded bg-gray-700 focus:outline-none"
-            required
-          />
+      <input
+        type="email"
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className="w-full px-4 py-2 rounded bg-gray-700 focus:outline-none"
+        required
+      />
 
-          {error && <p className="text-red-400 text-sm">{error}</p>}
+      <input
+        type="password"
+        placeholder="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        className="w-full px-4 py-2 rounded bg-gray-700 focus:outline-none"
+        required
+      />
 
-          <button
-            type="submit"
-            className="w-full bg-lime-400 text-black py-2 rounded font-semibold hover:bg-lime-300 transition"
-            disabled={loading}
-          >
-            {loading ? "Logging in..." : "Login"}
-          </button>
-        </form>
-      </div>
-    </div>
+      {error && <p className="text-red-400 text-sm">{error}</p>}
+
+      <button
+        type="submit"
+        className="w-full bg-text-orange text-black py-2 rounded font-semibold hover:bg-orange-200 transition cursor-pointer"
+        disabled={loading}
+      >
+        {loading ? "Logging in..." : "Login"}
+      </button>
+
+      {/* Toggle to Register */}
+      {onToggleForm && (
+        <button
+          type="button"
+          onClick={onToggleForm}
+          className="block mx-auto mt-4 text-text-orange hover:underline text-sm cursor-pointer"
+        >
+          Don’t have an account? Register
+        </button>
+      )}
+    </form>
   );
 };
 
