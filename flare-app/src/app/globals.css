@@ -51,3 +51,34 @@ body {
 .animate-fade-in {
   animation: fade-in 1s ease-in-out forwards;
 }
+
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+.pulse-marker {
+  position: relative;
+}
+
+.pulse-marker::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: orange;
+  transform: translate(-50%, -50%);
+  z-index: -1;
+  animation: pulse 1.5s infinite ease-out;
+}

@@ -7,6 +7,9 @@ import SearchBox from "./SearchBox";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import EnableLocation from "./EnableLocation";
 import AuthBtns from "./AuthBtns";
+import router from "next/router";
+import { UserContext } from "@/context/UserContext";
+import { useContext } from "react";
 
 const MapWrapper = () => {
   const [viewport, setViewport] = useState<ViewState>({
@@ -17,6 +20,7 @@ const MapWrapper = () => {
     pitch: 0,
     padding: { top: 0, bottom: 0, left: 0, right: 0 },
   });
+  const { user } = useContext(UserContext);
 
   const [locationEnabled, setLocationEnabled] = useState(false);
   const userLocation = useGeolocation(locationEnabled);
@@ -64,7 +68,17 @@ const MapWrapper = () => {
         </div>
 
         <div className="absolute top-4 right-4 z-40">
-          <AuthBtns />
+          <div className="flex items-center gap-4">
+            {user && (
+              <img
+                className="w-5 h-5 cursor-pointer hover:scale-110 transition"
+                src="/logo.png"
+                alt="logo"
+                onClick={() => router.push("/account")}
+              />
+            )}
+            <AuthBtns />
+          </div>
         </div>
       </div>
     </>

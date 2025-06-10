@@ -425,6 +425,7 @@ const FlareMap = ({ viewport, setViewport, userLocation }: FlareMapProps) => {
               anchor="center"
             >
               <div
+                className="pulse-marker"
                 style={{
                   width: 16,
                   height: 16,
