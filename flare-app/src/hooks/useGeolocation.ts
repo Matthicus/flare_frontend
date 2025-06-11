@@ -1,4 +1,3 @@
-// hooks/useGeolocation.ts
 import { useEffect, useState } from "react";
 
 export function useGeolocation(enabled: boolean) {
@@ -6,8 +5,6 @@ export function useGeolocation(enabled: boolean) {
 
   useEffect(() => {
     if (!enabled || !("geolocation" in navigator)) return;
-
-    let didSetInitialCenter = false;
 
     const watcherId = navigator.geolocation.watchPosition(
       (pos) => {

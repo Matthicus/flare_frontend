@@ -6,6 +6,7 @@ type User = {
   id: number;
   name: string;
   email: string;
+  avatar?: string;
   // add other user fields you expect
 } | null;
 

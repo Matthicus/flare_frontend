@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 type Props = {
   onEnable: () => void;
   enabled: boolean;
@@ -14,7 +16,7 @@ const EnableLocation = ({ onEnable, enabled }: Props) => {
             : "bg-text-orange hover:bg-accent-color text-black cursor-pointer"
         }`}
       >
-        <img
+        <Image
           src="/location.png"
           alt="location"
           className="w-5 h-5 object-contain"

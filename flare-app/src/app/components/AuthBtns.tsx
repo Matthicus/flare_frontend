@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import LogoutBtn from "./LogoutBtn";
 import LoginModal from "./LoginModal"; // ✅ Import modal
-import api from "../../lib/axios";
 
 const AuthBtns = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);

@@ -1,10 +1,32 @@
 import { useEffect, useState } from "react";
 import { fetchAllKnownPlaces, searchNearbyKnownPlaces } from "@/lib/axios";
 
+interface Place {
+  id: string | number;
+  name: string;
+  lat: number;
+  lon: number;
+}
+
+interface Result {
+  id: string | number;
+  name: string;
+  distance: number;
+  flare_count: number;
+}
+
+// This interface describes the raw data shape returned from your API
+interface RawResult {
+  id: string | number;
+  name: string;
+  distance?: number | string | null;
+  flare_count?: number | string | null;
+}
+
 export default function NearbySearchForm() {
   const [query, setQuery] = useState("");
-  const [places, setPlaces] = useState<any[]>([]);
-  const [results, setResults] = useState<any[]>([]);
+  const [places, setPlaces] = useState<Place[]>([]);
+  const [results, setResults] = useState<Result[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -29,9 +51,22 @@ export default function NearbySearchForm() {
 
     try {
       const data = await searchNearbyKnownPlaces(match.lat, match.lon);
-      setResults(data);
-    } catch (err: any) {
-      setError(err.message || "Something went wrong");
+
+      // Map API response to Result type and ensure distance & flare_count are numbers
+      const mappedResults: Result[] = data.map((item: RawResult) => ({
+        id: item.id,
+        name: item.name,
+        distance: Number(item.distance ?? 0),
+        flare_count: Number(item.flare_count ?? 0),
+      }));
+
+      setResults(mappedResults);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Something went wrong");
+      }
     } finally {
       setLoading(false);
     }

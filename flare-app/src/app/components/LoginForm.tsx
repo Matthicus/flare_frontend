@@ -8,6 +8,22 @@ type Props = {
   onToggleForm?: () => void;
 };
 
+interface Flare {
+  id?: number | string;
+  category?: string;
+  note?: string;
+  latitude?: number;
+  longitude?: number;
+}
+
+interface ApiError {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+}
+
 const LoginForm = ({ onClose, onToggleForm }: Props) => {
   const { user, setUser } = useContext(UserContext);
 
@@ -15,7 +31,7 @@ const LoginForm = ({ onClose, onToggleForm }: Props) => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [flares, setFlares] = useState<any[]>([]);
+  const [flares, setFlares] = useState<Flare[]>([]);
   const [flaresLoading, setFlaresLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -30,8 +46,15 @@ const LoginForm = ({ onClose, onToggleForm }: Props) => {
       console.log("Logged in user:", currentUser);
       localStorage.setItem("loggedIn", "true");
       window.location.reload();
-    } catch (err: any) {
-      setError(err.response?.data?.message || err.message || "Login failed");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else if (typeof err === "object" && err !== null && "response" in err) {
+        const apiErr = err as ApiError;
+        setError(apiErr.response?.data?.message || "Login failed");
+      } else {
+        setError("Login failed");
+      }
     } finally {
       setLoading(false);
     }
@@ -45,11 +68,19 @@ const LoginForm = ({ onClose, onToggleForm }: Props) => {
       try {
         const data = await getUserFlares();
         setFlares(data);
-      } catch (err: any) {
-        console.error(
-          "Failed to fetch flares:",
-          err.response?.data || err.message
-        );
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          console.error("Failed to fetch flares:", err.message);
+        } else if (
+          typeof err === "object" &&
+          err !== null &&
+          "response" in err
+        ) {
+          const apiErr = err as ApiError;
+          console.error("Failed to fetch flares:", apiErr.response?.data);
+        } else {
+          console.error("Failed to fetch flares: Unknown error");
+        }
       } finally {
         setFlaresLoading(false);
       }
@@ -69,7 +100,7 @@ const LoginForm = ({ onClose, onToggleForm }: Props) => {
           ) : flares.length > 0 ? (
             <ul className="list-disc list-inside space-y-1">
               {flares.map((flare, index) => (
-                <li key={flare.id || index} className="break-words">
+                <li key={flare.id ?? index} className="break-words">
                   📍 <strong>Category:</strong> {flare.category || "N/A"} <br />
                   <strong>Note:</strong> {flare.note || "No note"} <br />
                   <small>

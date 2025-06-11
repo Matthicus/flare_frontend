@@ -7,6 +7,38 @@ type Props = {
   onToggleForm?: () => void;
 };
 
+// Define a type for axios error response you expect
+interface AxiosErrorResponse {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+}
+
+// Type guard function to check if error is Axios-like error
+function isAxiosError(error: unknown): error is AxiosErrorResponse {
+  if (typeof error === "object" && error !== null && "response" in error) {
+    const err = error as { response?: unknown };
+    if (
+      err.response &&
+      typeof err.response === "object" &&
+      "data" in err.response
+    ) {
+      const data = (err.response as { data?: unknown }).data;
+      if (
+        data &&
+        typeof data === "object" &&
+        "message" in data &&
+        typeof (data as { message?: unknown }).message === "string"
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 const RegisterForm = ({ onClose, onToggleForm }: Props) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -29,10 +61,14 @@ const RegisterForm = ({ onClose, onToggleForm }: Props) => {
       });
       console.log("Register successful!", data);
       // You might redirect or switch to login view here
-    } catch (err: any) {
-      setError(
-        err.response?.data?.message || err.message || "Registration failed"
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        setError(err.response?.data?.message || "Registration failed");
+      } else if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Registration failed");
+      }
     } finally {
       setLoading(false);
     }

@@ -14,8 +14,12 @@ const LogoutBtn = () => {
       await logout();
       localStorage.removeItem("loggedIn");
       window.location.reload();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Logout failed");
+      }
     } finally {
       setLoading(false);
     }

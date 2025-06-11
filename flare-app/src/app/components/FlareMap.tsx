@@ -6,22 +6,8 @@ import { postFlare } from "@/lib/axios";
 import { postFlareWithPhoto } from "@/lib/axios";
 import Modal from "./Modal";
 import { deleteFlare } from "@/lib/axios";
-
-type Flare = {
-  id?: number;
-  latitude: number;
-  longitude: number;
-  note: string;
-  category: "regular" | "blue" | "violet"; // will be calculated dynamically
-  user_id?: number;
-  place_id?: number | null;
-  place?: {
-    mapbox_id: string;
-    name: string;
-  } | null;
-  participantsCount?: number; // new
-  photo_url?: string | null;
-};
+import { Flare } from "@/types/flare";
+import Image from "next/image";
 
 type FlareMapProps = {
   viewport: ViewState;
@@ -121,7 +107,7 @@ const FlareMap = ({ viewport, setViewport, userLocation }: FlareMapProps) => {
         user_id: 3,
         place: selectedPlace
           ? { mapbox_id: selectedPlace.mapbox_id, name: selectedPlace.name }
-          : null,
+          : undefined,
       };
 
       const saved = photo
@@ -152,8 +138,12 @@ const FlareMap = ({ viewport, setViewport, userLocation }: FlareMapProps) => {
       setNewFlareLocation(null);
       setSelectedPlace(null);
       setPhoto(null); // clear after upload
-    } catch (err: any) {
-      console.error("Failed to post flare:", err.message);
+    } catch (err) {
+      if (err instanceof Error) {
+        console.error("Failed to post flare:", err.message);
+      } else {
+        console.error("Failed to post flare:", String(err));
+      }
     } finally {
       setSubmitting(false);
     }
@@ -203,8 +193,12 @@ const FlareMap = ({ viewport, setViewport, userLocation }: FlareMapProps) => {
       setFlares((prev) => prev.filter((flare) => flare.id !== id));
       setSelectedFlareId(null);
       setShowPhoto(false);
-    } catch (err: any) {
-      console.error("Failed to delete flare:", err.message);
+    } catch (err) {
+      if (err instanceof Error) {
+        console.error("Failed to delete flare:", err.message);
+      } else {
+        console.error("Failed to delete flare:", String(err));
+      }
     } finally {
       setSubmitting(false);
     }
@@ -266,17 +260,21 @@ const FlareMap = ({ viewport, setViewport, userLocation }: FlareMapProps) => {
                 }}
               >
                 {flare.category === "blue" && (
-                  <img className="w-8" src="/blue_flare.png" alt="Blue Flare" />
+                  <Image
+                    className="w-8"
+                    src="/blue_flare.png"
+                    alt="Blue Flare"
+                  />
                 )}
                 {flare.category === "violet" && (
-                  <img
+                  <Image
                     className="w-8"
                     src="/violet_flare.png"
                     alt="Violet Flare"
                   />
                 )}
                 {flare.category === "regular" && (
-                  <img
+                  <Image
                     className="w-8"
                     src="/orange_flare.png"
                     alt="Regular Flare"
@@ -327,7 +325,7 @@ const FlareMap = ({ viewport, setViewport, userLocation }: FlareMapProps) => {
 
                     {/* Show photo */}
                     {showPhoto && flare.photo_url && (
-                      <img
+                      <Image
                         src={flare.photo_url}
                         alt="Flare Photo"
                         className="w-full h-auto rounded shadow"
@@ -401,7 +399,7 @@ const FlareMap = ({ viewport, setViewport, userLocation }: FlareMapProps) => {
                   />
                 </div>
                 {photo && (
-                  <img
+                  <Image
                     src={URL.createObjectURL(photo)}
                     alt="Preview"
                     className="w-full h-auto rounded"

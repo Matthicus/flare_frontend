@@ -2,10 +2,11 @@
 import { useContext, useEffect, useState } from "react";
 import { UserContext } from "@/context/UserContext";
 import { getUserFlares } from "@/lib/axios";
-
+import { Flare } from "@/types/flare";
+import Image from "next/image";
 const AccountPage = () => {
   const { user } = useContext(UserContext);
-  const [flares, setFlares] = useState([]);
+  const [flares, setFlares] = useState<Flare[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,9 +29,11 @@ const AccountPage = () => {
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6 space-y-8">
       <div className="flex items-center gap-4">
-        <img
+        <Image
           src={user.avatar || "/default-avatar.png"}
           alt="avatar"
+          width={80}
+          height={80}
           className="w-20 h-20 rounded-full border-2 border-lime-400"
         />
         <div>

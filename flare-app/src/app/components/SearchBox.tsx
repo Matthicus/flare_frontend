@@ -1,13 +1,20 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 
 type Props = {
   onSelect: (lng: number, lat: number) => void;
 };
 
+type MapboxFeature = {
+  id: string;
+  place_name: string;
+  center: [number, number]; // [lng, lat]
+};
+
 const SearchBox = ({ onSelect }: Props) => {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<MapboxFeature[]>([]);
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -22,7 +29,7 @@ const SearchBox = ({ onSelect }: Props) => {
     );
 
     const data = await res.json();
-    setResults(data.features);
+    setResults(data.features as MapboxFeature[]);
   };
 
   useEffect(() => {
@@ -41,7 +48,7 @@ const SearchBox = ({ onSelect }: Props) => {
         }`}
         aria-label="Toggle search"
       >
-        <img
+        <Image
           src="/search.png"
           alt="search"
           className="w-5 h-5 object-contain"
