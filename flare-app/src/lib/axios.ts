@@ -2,7 +2,7 @@ import axios from "axios";
 import { KnownPlace } from "@/types/knownPlace";
 import { Flare } from "@/types/flare";
 import { User } from "@/types/user";
-import { AxiosRequestConfig } from 'axios';
+import {  InternalAxiosRequestConfig } from 'axios';
 
 function getCookie(name: string) {
   const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
@@ -33,17 +33,15 @@ const api = axios.create({
 });
 
 // Attach CSRF token dynamically before each request
-const attachCSRFToken = (config: AxiosRequestConfig): AxiosRequestConfig => {
-  // Try multiple token sources
+const attachCSRFToken = (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
   const xsrfToken = getCookie('XSRF-TOKEN');
-  const csrfToken = getCookie('laravel_token'); // Laravel might set this
+  const csrfToken = getCookie('laravel_token');
   
-  if (xsrfToken && config.headers) {
+  if (xsrfToken) {
     config.headers['X-XSRF-TOKEN'] = decodeURIComponent(xsrfToken);
   }
   
-  // Also try X-CSRF-TOKEN header
-  if (csrfToken && config.headers) {
+  if (csrfToken) {
     config.headers['X-CSRF-TOKEN'] = decodeURIComponent(csrfToken);
   }
   
@@ -52,6 +50,8 @@ const attachCSRFToken = (config: AxiosRequestConfig): AxiosRequestConfig => {
 
 api.interceptors.request.use(attachCSRFToken);
 webApi.interceptors.request.use(attachCSRFToken);
+
+
 
 type LoginCredentials = {
   email: string;
