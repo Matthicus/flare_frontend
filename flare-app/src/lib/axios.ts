@@ -2,6 +2,7 @@ import axios from "axios";
 import { KnownPlace } from "@/types/knownPlace";
 import { Flare } from "@/types/flare";
 import { User } from "@/types/user";
+import Cookies from "js-cookie";
 
 // Web routes (no /api prefix)
 const webApi = axios.create({
@@ -21,6 +22,14 @@ const api = axios.create({
     "Content-Type": "application/json",
     Accept: "application/json",
   },
+});
+
+api.interceptors.request.use((config) => {
+  const xsrfToken = Cookies.get("XSRF-TOKEN");
+  if (xsrfToken) {
+    config.headers["X-XSRF-TOKEN"] = decodeURIComponent(xsrfToken);
+  }
+  return config;
 });
 
 type LoginCredentials = {
