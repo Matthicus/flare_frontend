@@ -104,23 +104,32 @@ export async function register({
   password_confirmation,
 }: RegisterCredentials): Promise<User> {
   // Get CSRF cookie first
+  console.log("🔄 Getting CSRF cookie...");
   await webApi.get("/sanctum/csrf-cookie");
   
-  // Add a small delay to ensure cookie is set
-  await new Promise(resolve => setTimeout(resolve, 100));
+  // Debug: Check what cookies we have
+  console.log("🍪 All cookies:", document.cookie);
+  console.log("🔑 XSRF-TOKEN:", getCookie('XSRF-TOKEN'));
+  console.log("🔑 laravel_session:", getCookie('laravel_session'));
+  console.log("🔑 laravel_token:", getCookie('laravel_token'));
+  
+  // Small delay to ensure cookie is set
+  await new Promise(resolve => setTimeout(resolve, 200));
   
   try {
+    console.log("📤 Attempting registration...");
     const response = await api.post<User>("/register", {
       email,
       name,
       password,
       password_confirmation,
     });
-    console.log("register successful");
+    console.log("✅ Register successful");
     return response.data;
   } catch (error: unknown) {
+    console.error("❌ Registration failed:", error);
     if (axios.isAxiosError(error) && error.response) {
-      console.error("Registration error:", error.response.data);
+      console.error("Error details:", error.response.data);
       throw new Error(error.response.data.message || "Registration failed");
     }
     throw new Error("Network error");
