@@ -3,6 +3,11 @@ import { KnownPlace } from "@/types/knownPlace";
 import { Flare } from "@/types/flare";
 import { User } from "@/types/user";
 
+function getCookie(name: string) {
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  if (match) return match[2];
+  return null;
+}
 
 // Web routes (no /api prefix)
 const webApi = axios.create({
@@ -23,6 +28,18 @@ const api = axios.create({
     Accept: "application/json",
   },
 });
+
+// Attach CSRF token dynamically before each request
+const attachXSRFToken = (config: any) => {
+  const token = getCookie('XSRF-TOKEN');
+  if (token) {
+    config.headers['X-XSRF-TOKEN'] = decodeURIComponent(token);
+  }
+  return config;
+};
+
+api.interceptors.request.use(attachXSRFToken);
+webApi.interceptors.request.use(attachXSRFToken);
 
 type LoginCredentials = {
   email: string;
@@ -51,7 +68,6 @@ export async function login({
   email,
   password,
 }: LoginCredentials): Promise<User> {
-  // CSRF cookie must be fetched from webApi (no /api)
   await webApi.get("/sanctum/csrf-cookie");
 
   try {
@@ -192,7 +208,7 @@ export async function postFlareWithPhoto(
     formData.append("latitude", String(data.latitude));
     formData.append("longitude", String(data.longitude));
     formData.append("note", data.note);
-    formData.append("user_id", String(data.user_id)); // replace with auth logic if needed
+    formData.append("user_id", String(data.user_id));
 
     if (data.category) {
       formData.append("category", data.category);
