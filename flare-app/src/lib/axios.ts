@@ -3,6 +3,17 @@ import { KnownPlace } from "@/types/knownPlace";
 import { Flare } from "@/types/flare";
 import { User } from "@/types/user";
 
+// Web routes (no /api prefix)
+const webApi = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/api$/, "") || "",
+  withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  },
+});
+
+// API routes (with /api prefix)
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
   withCredentials: true,
@@ -26,17 +37,21 @@ type RegisterCredentials = {
 
 export async function testConnection(): Promise<{ message: string }> {
   try {
-    const res = await api.get<{ message: string }>('/ping');
-    console.log('[PING] Response:', res.data);
+    const res = await api.get<{ message: string }>("/ping");
+    console.log("[PING] Response:", res.data);
     return res.data;
   } catch (error) {
-    console.error('[PING] Failed:', error);
+    console.error("[PING] Failed:", error);
     throw error;
   }
 }
 
-export async function login({ email, password }: LoginCredentials): Promise<User> {
-  await api.get('/sanctum/csrf-cookie');
+export async function login({
+  email,
+  password,
+}: LoginCredentials): Promise<User> {
+  // CSRF cookie must be fetched from webApi (no /api)
+  await webApi.get("/sanctum/csrf-cookie");
 
   try {
     const response = await api.post<User>("/login", {
@@ -59,7 +74,7 @@ export async function register({
   password,
   password_confirmation,
 }: RegisterCredentials): Promise<User> {
-  await api.get('/sanctum/csrf-cookie');
+  await webApi.get("/sanctum/csrf-cookie");
 
   try {
     const response = await api.post<User>("/register", {
@@ -104,7 +119,7 @@ export async function getUserFlares(): Promise<Flare[]> {
   }
 }
 
-export async function postFlare(data: Omit<Flare, 'id'>): Promise<Flare> {
+export async function postFlare(data: Omit<Flare, "id">): Promise<Flare> {
   try {
     const response = await api.post<Flare>("/flares", data);
     console.log("[FLARES] Flare posted:", response.data);
@@ -119,7 +134,7 @@ export async function postFlare(data: Omit<Flare, 'id'>): Promise<Flare> {
 
 export async function fetchCurrentUser(): Promise<User | null> {
   try {
-    const response = await api.get<User | null>('/me');
+    const response = await api.get<User | null>("/me");
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
@@ -137,16 +152,16 @@ export async function searchNearbyKnownPlaces(
   radius: number = 200
 ): Promise<KnownPlace[]> {
   try {
-    const response = await api.get<KnownPlace[]>('/known-places/nearby', {
+    const response = await api.get<KnownPlace[]>("/known-places/nearby", {
       params: { latitude, longitude, radius },
     });
-    console.log('[KNOWN PLACES] Nearby search result:', response.data);
+    console.log("[KNOWN PLACES] Nearby search result:", response.data);
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      console.error('[KNOWN PLACES] Search failed:', error.response?.data || error.message);
+      console.error("[KNOWN PLACES] Search failed:", error.response?.data || error.message);
     } else {
-      console.error('[KNOWN PLACES] Search failed:', error);
+      console.error("[KNOWN PLACES] Search failed:", error);
     }
     throw error;
   }
@@ -167,7 +182,7 @@ export async function fetchAllKnownPlaces(): Promise<KnownPlace[]> {
 }
 
 export async function postFlareWithPhoto(
-  data: Omit<Flare, 'id' | 'photo'> & { place?: { mapbox_id: string; name: string } },
+  data: Omit<Flare, "id" | "photo"> & { place?: { mapbox_id: string; name: string } },
   photo: File
 ): Promise<Flare> {
   try {
