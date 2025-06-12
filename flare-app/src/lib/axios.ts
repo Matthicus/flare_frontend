@@ -2,6 +2,7 @@ import axios from "axios";
 import { KnownPlace } from "@/types/knownPlace";
 import { Flare } from "@/types/flare";
 import { User } from "@/types/user";
+import { AxiosRequestConfig } from 'axios';
 
 function getCookie(name: string) {
   const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
@@ -23,25 +24,34 @@ const webApi = axios.create({
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
   withCredentials: true,
-  xsrfCookieName: 'XSRF-TOKEN',
-  xsrfHeaderName: 'X-XSRF-TOKEN',
+ 
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
+   
   },
 });
 
 // Attach CSRF token dynamically before each request
-const attachXSRFToken = (config: any) => {
-  const token = getCookie('XSRF-TOKEN');
-  if (token) {
-    config.headers['X-XSRF-TOKEN'] = decodeURIComponent(token);
+const attachCSRFToken = (config: AxiosRequestConfig): AxiosRequestConfig => {
+  // Try multiple token sources
+  const xsrfToken = getCookie('XSRF-TOKEN');
+  const csrfToken = getCookie('laravel_token'); // Laravel might set this
+  
+  if (xsrfToken && config.headers) {
+    config.headers['X-XSRF-TOKEN'] = decodeURIComponent(xsrfToken);
   }
+  
+  // Also try X-CSRF-TOKEN header
+  if (csrfToken && config.headers) {
+    config.headers['X-CSRF-TOKEN'] = decodeURIComponent(csrfToken);
+  }
+  
   return config;
 };
 
-api.interceptors.request.use(attachXSRFToken);
-webApi.interceptors.request.use(attachXSRFToken);
+api.interceptors.request.use(attachCSRFToken);
+webApi.interceptors.request.use(attachCSRFToken);
 
 type LoginCredentials = {
   email: string;
@@ -93,8 +103,12 @@ export async function register({
   password,
   password_confirmation,
 }: RegisterCredentials): Promise<User> {
+  // Get CSRF cookie first
   await webApi.get("/sanctum/csrf-cookie");
-
+  
+  // Add a small delay to ensure cookie is set
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
   try {
     const response = await api.post<User>("/register", {
       email,
@@ -106,6 +120,7 @@ export async function register({
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error) && error.response) {
+      console.error("Registration error:", error.response.data);
       throw new Error(error.response.data.message || "Registration failed");
     }
     throw new Error("Network error");
