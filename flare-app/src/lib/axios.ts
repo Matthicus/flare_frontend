@@ -23,6 +23,8 @@ const webApi = axios.create({
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
   withCredentials: true,
+  xsrfCookieName: 'XSRF-TOKEN',
+  xsrfHeaderName: 'X-XSRF-TOKEN',
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
