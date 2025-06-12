@@ -2,7 +2,7 @@ import axios from "axios";
 import { KnownPlace } from "@/types/knownPlace";
 import { Flare } from "@/types/flare";
 import { User } from "@/types/user";
-import {  InternalAxiosRequestConfig } from 'axios';
+
 
 function getCookie(name: string) {
   const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
@@ -11,6 +11,19 @@ function getCookie(name: string) {
 }
 
 // Web routes (no /api prefix)
+const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
+  withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  },
+  // Add these two lines for automatic XSRF handling
+  xsrfCookieName: 'XSRF-TOKEN',
+  xsrfHeaderName: 'X-XSRF-TOKEN',
+});
+
+// Web routes (no /api prefix) - keep this as is
 const webApi = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/api$/, "") || "",
   withCredentials: true,
@@ -20,36 +33,8 @@ const webApi = axios.create({
   },
 });
 
-// API routes (with /api prefix)
-const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
-  withCredentials: true,
- 
-  headers: {
-    "Content-Type": "application/json",
-    Accept: "application/json",
-   
-  },
-});
 
-// Attach CSRF token dynamically before each request
-const attachCSRFToken = (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
-  const xsrfToken = getCookie('XSRF-TOKEN');
-  const csrfToken = getCookie('laravel_token');
-  
-  if (xsrfToken) {
-    config.headers['X-XSRF-TOKEN'] = decodeURIComponent(xsrfToken);
-  }
-  
-  if (csrfToken) {
-    config.headers['X-CSRF-TOKEN'] = decodeURIComponent(csrfToken);
-  }
-  
-  return config;
-};
 
-api.interceptors.request.use(attachCSRFToken);
-webApi.interceptors.request.use(attachCSRFToken);
 
 
 
