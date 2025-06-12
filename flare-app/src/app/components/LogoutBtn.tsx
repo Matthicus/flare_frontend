@@ -1,9 +1,11 @@
 "use client";
 
 import { logout } from "@/lib/axios";
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { UserContext } from "@/context/UserContext";
 
 const LogoutBtn = () => {
+  const { setUser } = useContext(UserContext);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -13,7 +15,7 @@ const LogoutBtn = () => {
     try {
       await logout();
       localStorage.removeItem("loggedIn");
-      window.location.reload();
+      setUser(null); // Clear user in context instead of reloading
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);

@@ -1,28 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useContext } from "react";
 import LogoutBtn from "./LogoutBtn";
-import LoginModal from "./LoginModal"; // ✅ Import modal
+import LoginModal from "./LoginModal";
+import { UserContext } from "@/context/UserContext";
 
 const AuthBtns = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false); // ✅ Modal state
-
-  // useEffect(() => {
-  //   api
-  //     .get("/me")
-  //     .then(() => setIsLoggedIn(true))
-  //     .catch(() => setIsLoggedIn(false));
-  // }, []);
-
-  useEffect(() => {
-    const loggedIn = localStorage.getItem("loggedIn");
-    setIsLoggedIn(loggedIn === "true");
-  }, []);
+  const { user } = useContext(UserContext);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   return (
     <>
-      {isLoggedIn ? (
+      {user ? (
         <LogoutBtn />
       ) : (
         <>

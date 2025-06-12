@@ -36,7 +36,7 @@ export async function testConnection(): Promise<{ message: string }> {
 }
 
 export async function login({ email, password }: LoginCredentials): Promise<User> {
-  await axios.get('https://flare.ddev.site/sanctum/csrf-cookie');
+  await api.get('/sanctum/csrf-cookie');
 
   try {
     const response = await api.post<User>("/login", {
@@ -59,7 +59,7 @@ export async function register({
   password,
   password_confirmation,
 }: RegisterCredentials): Promise<User> {
-  await axios.get('https://flare.ddev.site/sanctum/csrf-cookie');
+  await api.get('/sanctum/csrf-cookie');
 
   try {
     const response = await api.post<User>("/register", {
@@ -119,9 +119,7 @@ export async function postFlare(data: Omit<Flare, 'id'>): Promise<Flare> {
 
 export async function fetchCurrentUser(): Promise<User | null> {
   try {
-    const response = await api.get<User | null>('/me', {
-      withCredentials: true,
-    });
+    const response = await api.get<User | null>('/me');
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
@@ -175,24 +173,20 @@ export async function postFlareWithPhoto(
   try {
     const formData = new FormData();
 
-    // Required fields
     formData.append("latitude", String(data.latitude));
     formData.append("longitude", String(data.longitude));
     formData.append("note", data.note);
     formData.append("user_id", String(data.user_id)); // replace with auth logic if needed
 
-    // Optional category
     if (data.category) {
       formData.append("category", data.category);
     }
 
-    // Optional place fields (array style)
     if (data.place) {
       formData.append("place[mapbox_id]", data.place.mapbox_id);
       formData.append("place[name]", data.place.name);
     }
 
-    // Add photo
     if (photo) {
       formData.append("photo", photo);
     }
@@ -201,7 +195,6 @@ export async function postFlareWithPhoto(
       headers: {
         "Content-Type": "multipart/form-data",
       },
-      withCredentials: true,
     });
 
     console.log("[FLARES] Flare with photo posted:", response.data);
@@ -216,9 +209,7 @@ export async function postFlareWithPhoto(
 
 export async function deleteFlare(id: number): Promise<{ message: string }> {
   try {
-    const response = await api.delete<{ message: string }>(`/flares/${id}`, {
-      withCredentials: true,
-    });
+    const response = await api.delete<{ message: string }>(`/flares/${id}`);
     console.log(`[FLARES] Flare ${id} deleted`, response.data);
     return response.data;
   } catch (error: unknown) {
