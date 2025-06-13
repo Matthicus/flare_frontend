@@ -156,7 +156,7 @@ export async function login({
   }
   
   try {
-    const response = await api.post("/login", {
+    await api.post("/login", {
       email,
       password,
     });
@@ -186,7 +186,7 @@ export async function register({
     await initializeCsrf();
     
     console.log("📤 Attempting registration...");
-    const response = await api.post("/register", {
+    await api.post("/register", {
       email,
       name,
       password,
@@ -336,5 +336,8 @@ export async function deleteFlare(id: number): Promise<{ message: string }> {
     throw new Error("Network error while deleting flare");
   }
 }
+
+// Add alias for backward compatibility
+export const fetchCurrentUser = getCurrentUser;
 
 export default api;
