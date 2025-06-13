@@ -203,19 +203,7 @@ export async function postFlare(data: Omit<Flare, "id">): Promise<Flare> {
   }
 }
 
-export async function fetchCurrentUser(): Promise<User | null> {
-  try {
-    const response = await api.get<User | null>("/me");
-    return response.data;
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      console.error("Failed to fetch current user:", error.response?.data || error.message);
-    } else {
-      console.error("Failed to fetch current user:", error);
-    }
-    throw error;
-  }
-}
+
 
 export async function searchNearbyKnownPlaces(
   latitude: number,
