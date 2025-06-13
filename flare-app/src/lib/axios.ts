@@ -23,6 +23,7 @@ const initializeCsrf = async () => {
     console.log("🔄 CSRF cookie initialized");
   } catch (error) {
     console.error('Failed to initialize CSRF:', error);
+    throw error; // Re-throw to handle in calling functions
   }
 };
 
@@ -34,49 +35,76 @@ const api = axios.create({
     "Content-Type": "application/json",
     Accept: "application/json",
   },
-  xsrfCookieName: 'XSRF-TOKEN',
-  xsrfHeaderName: 'X-XSRF-TOKEN',
+  // Remove automatic XSRF handling - we'll do it manually
+  // xsrfCookieName: 'XSRF-TOKEN',
+  // xsrfHeaderName: 'X-XSRF-TOKEN',
 });
 
-// Add request interceptor to ensure CSRF token
-api.interceptors.request.use(async (config) => {
-  if (['post', 'put', 'patch', 'delete'].includes(config.method?.toLowerCase() || '')) {
-    const token = getCookie('XSRF-TOKEN');
-    if (!token) {
-      console.log("🔄 No CSRF token found, initializing...");
-      await initializeCsrf();
+// Add request interceptor to manually handle CSRF token
+api.interceptors.request.use(
+  async (config) => {
+    // For state-changing operations, ensure we have a CSRF token
+    if (['post', 'put', 'patch', 'delete'].includes(config.method?.toLowerCase() || '')) {
+      const token = getCookie('XSRF-TOKEN');
+      
+      if (!token) {
+        console.log("🔄 No CSRF token found, initializing...");
+        try {
+          await initializeCsrf();
+          // Get the token again after initialization
+          const newToken = getCookie('XSRF-TOKEN');
+          if (newToken) {
+            config.headers['X-XSRF-TOKEN'] = decodeURIComponent(newToken);
+          }
+        } catch (error) {
+          console.error("Failed to get CSRF token:", error);
+        }
+      } else {
+        // Set the CSRF token header manually
+        config.headers['X-XSRF-TOKEN'] = decodeURIComponent(token);
+      }
     }
+    
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
-  return config;
-});
+);
 
-// Response interceptor with retry flag to prevent infinite loops
+// Response interceptor with retry for CSRF token mismatch
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
     if (error.response?.status === 419 && !originalRequest._retry) {
-      originalRequest._retry = true; // Mark as retried once
+      originalRequest._retry = true;
 
       console.log("🔄 CSRF token expired, refreshing...");
-      await initializeCsrf();
-
-      // Wait a bit to ensure cookie is set
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      return api.request(originalRequest);
+      
+      try {
+        await initializeCsrf();
+        
+        // Update the CSRF token in the original request
+        const newToken = getCookie('XSRF-TOKEN');
+        if (newToken) {
+          originalRequest.headers['X-XSRF-TOKEN'] = decodeURIComponent(newToken);
+        }
+        
+        return api.request(originalRequest);
+      } catch (csrfError) {
+        console.error("Failed to refresh CSRF token:", csrfError);
+        return Promise.reject(error);
+      }
     }
 
     return Promise.reject(error);
   }
 );
 
-// Initialize CSRF token when module loads
-initializeCsrf();
-
- // rest of your API functions (login, register, etc.)
-
+// Initialize CSRF token when module loads (but don't block)
+initializeCsrf().catch(console.error);
 
 type LoginCredentials = {
   email: string;
@@ -101,20 +129,41 @@ export async function testConnection(): Promise<{ message: string }> {
   }
 }
 
+export async function getCurrentUser(): Promise<User> {
+  try {
+    const response = await api.get<User>("/me");
+    console.log("✅ Current user fetched");
+    return response.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error) && error.response) {
+      console.error("❌ Failed to fetch current user:", error.response.data);
+      throw new Error(error.response.data.message || "Failed to fetch user");
+    }
+    throw new Error("Network error");
+  }
+}
+
 export async function login({
   email,
   password,
 }: LoginCredentials): Promise<User> {
   // Ensure CSRF token before login
-  await initializeCsrf();
+  try {
+    await initializeCsrf();
+  } catch (error) {
+    console.error("Failed to initialize CSRF for login:", error);
+    // Continue anyway, the request interceptor will handle it
+  }
   
   try {
-    const response = await api.post<User>("/login", {
+    const response = await api.post("/login", {
       email,
       password,
     });
     console.log("✅ Login successful");
-    return response.data;
+    
+    // After successful login, fetch the current user
+    return await getCurrentUser();
   } catch (error: unknown) {
     if (axios.isAxiosError(error) && error.response) {
       console.error("❌ Login failed:", error.response.data);
@@ -132,35 +181,31 @@ export async function register({
 }: RegisterCredentials): Promise<User> {
   console.log("🔄 Preparing registration...");
   
-  // Ensure fresh CSRF token
-  await initializeCsrf();
-  
-  // Debug: Check cookies after initialization
-  console.log("🍪 All cookies:", document.cookie);
-  const xsrfToken = getCookie('XSRF-TOKEN');
-  console.log("🔑 XSRF-TOKEN found:", xsrfToken);
-  console.log("🔑 XSRF-TOKEN decoded:", xsrfToken ? decodeURIComponent(xsrfToken) : 'none');
-  
-  // Small delay to ensure cookie is set
-  await new Promise(resolve => setTimeout(resolve, 200));
-  
   try {
+    // Ensure fresh CSRF token
+    await initializeCsrf();
+    
     console.log("📤 Attempting registration...");
-    const response = await api.post<User>("/register", {
+    const response = await api.post("/register", {
       email,
       name,
       password,
       password_confirmation,
     });
     console.log("✅ Register successful");
-    return response.data;
+    
+    // After successful registration, fetch the current user
+    return await getCurrentUser();
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      console.error("❌ Request headers sent:", error.config?.headers);
-      console.error("❌ Response status:", error.response?.status);
-      console.error("❌ Response data:", error.response?.data);
+      console.error("❌ Registration failed:", error.response?.data);
+      if (error.response?.data?.errors) {
+        const errorMessages = Object.values(error.response.data.errors).flat();
+        throw new Error(errorMessages.join(', '));
+      }
+      throw new Error(error.response?.data?.message || "Registration failed");
     }
-    throw error;
+    throw new Error("Network error during registration");
   }
 }
 
@@ -202,8 +247,6 @@ export async function postFlare(data: Omit<Flare, "id">): Promise<Flare> {
     throw new Error("Network error while posting flare");
   }
 }
-
-
 
 export async function searchNearbyKnownPlaces(
   latitude: number,
