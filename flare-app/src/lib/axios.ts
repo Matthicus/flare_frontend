@@ -3,14 +3,29 @@ import { KnownPlace } from "@/types/knownPlace";
 import { Flare } from "@/types/flare";
 import { User } from "@/types/user";
 
-
-function getCookie(name: string) {
-  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-  if (match) return match[2];
+// Helper function to get cookie value
+const getCookie = (name: string): string | null => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    return parts.pop()?.split(';').shift() || null;
+  }
   return null;
-}
+};
 
-// Web routes (no /api prefix)
+const initializeCsrf = async () => {
+  try {
+    // Use the same base URL for CSRF cookie
+    await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/sanctum/csrf-cookie`, {
+      withCredentials: true
+    });
+    console.log("🔄 CSRF cookie initialized");
+  } catch (error) {
+    console.error('Failed to initialize CSRF:', error);
+  }
+};
+
+// Main API instance
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
   withCredentials: true,
@@ -18,25 +33,41 @@ const api = axios.create({
     "Content-Type": "application/json",
     Accept: "application/json",
   },
-  // Add these two lines for automatic XSRF handling
   xsrfCookieName: 'XSRF-TOKEN',
   xsrfHeaderName: 'X-XSRF-TOKEN',
 });
 
-// Web routes (no /api prefix) - keep this as is
-const webApi = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/api$/, "") || "",
-  withCredentials: true,
-  headers: {
-    "Content-Type": "application/json",
-    Accept: "application/json",
-  },
+// Add request interceptor to ensure CSRF token
+api.interceptors.request.use(async (config) => {
+  // For state-changing requests, ensure we have a CSRF token
+  if (['post', 'put', 'patch', 'delete'].includes(config.method?.toLowerCase() || '')) {
+    const token = getCookie('XSRF-TOKEN');
+    if (!token) {
+      console.log("🔄 No CSRF token found, initializing...");
+      await initializeCsrf();
+    }
+  }
+  return config;
 });
 
+// Response interceptor for error handling
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 419) {
+      console.log("🔄 CSRF token expired, refreshing...");
+      // CSRF token expired, refresh and retry
+      await initializeCsrf();
+      // Wait a bit for the cookie to be set
+      await new Promise(resolve => setTimeout(resolve, 100));
+      return api.request(error.config);
+    }
+    return Promise.reject(error);
+  }
+);
 
-
-
-
+// Initialize CSRF token when module loads
+initializeCsrf();
 
 type LoginCredentials = {
   email: string;
@@ -65,17 +96,19 @@ export async function login({
   email,
   password,
 }: LoginCredentials): Promise<User> {
-  await webApi.get("/sanctum/csrf-cookie");
-
+  // Ensure CSRF token before login
+  await initializeCsrf();
+  
   try {
     const response = await api.post<User>("/login", {
       email,
       password,
     });
-    console.log("login successful");
+    console.log("✅ Login successful");
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error) && error.response) {
+      console.error("❌ Login failed:", error.response.data);
       throw new Error(error.response.data.message || "Login failed");
     }
     throw new Error("Network error");
@@ -88,15 +121,18 @@ export async function register({
   password,
   password_confirmation,
 }: RegisterCredentials): Promise<User> {
-  console.log("🔄 Getting CSRF cookie...");
-  await webApi.get("/sanctum/csrf-cookie");
+  console.log("🔄 Preparing registration...");
   
-  // Debug: Check cookies
+  // Ensure fresh CSRF token
+  await initializeCsrf();
+  
+  // Debug: Check cookies after initialization
   console.log("🍪 All cookies:", document.cookie);
   const xsrfToken = getCookie('XSRF-TOKEN');
   console.log("🔑 XSRF-TOKEN found:", xsrfToken);
   console.log("🔑 XSRF-TOKEN decoded:", xsrfToken ? decodeURIComponent(xsrfToken) : 'none');
   
+  // Small delay to ensure cookie is set
   await new Promise(resolve => setTimeout(resolve, 200));
   
   try {
@@ -122,7 +158,7 @@ export async function register({
 export async function logout(): Promise<{ message: string }> {
   try {
     const response = await api.post<{ message: string }>("/logout");
-    console.log("Logout successful");
+    console.log("✅ Logout successful");
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error) && error.response) {
