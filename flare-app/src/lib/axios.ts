@@ -40,7 +40,6 @@ const api = axios.create({
 
 // Add request interceptor to ensure CSRF token
 api.interceptors.request.use(async (config) => {
-  // For state-changing requests, ensure we have a CSRF token
   if (['post', 'put', 'patch', 'delete'].includes(config.method?.toLowerCase() || '')) {
     const token = getCookie('XSRF-TOKEN');
     if (!token) {
@@ -51,24 +50,33 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
-// Response interceptor for error handling
+// Response interceptor with retry flag to prevent infinite loops
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 419) {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 419 && !originalRequest._retry) {
+      originalRequest._retry = true; // Mark as retried once
+
       console.log("🔄 CSRF token expired, refreshing...");
-      // CSRF token expired, refresh and retry
       await initializeCsrf();
-      // Wait a bit for the cookie to be set
+
+      // Wait a bit to ensure cookie is set
       await new Promise(resolve => setTimeout(resolve, 100));
-      return api.request(error.config);
+
+      return api.request(originalRequest);
     }
+
     return Promise.reject(error);
   }
 );
 
 // Initialize CSRF token when module loads
 initializeCsrf();
+
+ // rest of your API functions (login, register, etc.)
+
 
 type LoginCredentials = {
   email: string;
