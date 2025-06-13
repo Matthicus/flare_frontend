@@ -1,6 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { register } from "../../lib/axios";
+import { UserContext } from "@/context/UserContext";
 
 type Props = {
   onClose?: () => void;
@@ -40,6 +41,8 @@ function isAxiosError(error: unknown): error is AxiosErrorResponse {
 }
 
 const RegisterForm = ({ onClose, onToggleForm }: Props) => {
+  const { setUser } = useContext(UserContext);
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -53,14 +56,20 @@ const RegisterForm = ({ onClose, onToggleForm }: Props) => {
     setLoading(true);
 
     try {
-      const data = await register({
+      const userData = await register({
         name,
         email,
         password,
         password_confirmation: passwordConfirmation,
       });
-      console.log("Register successful!", data);
-      // You might redirect or switch to login view here
+
+      console.log("Register successful!", userData);
+      setUser(userData); // Set user immediately from register response
+
+      // Close the modal after successful registration
+      if (onClose) {
+        onClose();
+      }
     } catch (err: unknown) {
       if (isAxiosError(err)) {
         setError(err.response?.data?.message || "Registration failed");

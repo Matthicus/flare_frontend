@@ -1,13 +1,12 @@
 "use client";
 import React, { createContext, useState, useEffect, ReactNode } from "react";
-import { fetchCurrentUser } from "@/lib/axios";
+import { fetchCurrentUser, isAuthenticated } from "@/lib/axios"; // Add isAuthenticated import
 
 type User = {
   id: number;
   name: string;
   email: string;
   avatar?: string;
-  // add other user fields you expect
 } | null;
 
 type UserContextType = {
@@ -26,10 +25,18 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User>(null);
 
   const refreshUser = async () => {
+    // Only try to fetch user if we have a token
+    if (!isAuthenticated()) {
+      setUser(null);
+      return;
+    }
+
     try {
       const currentUser = await fetchCurrentUser();
       setUser(currentUser);
-    } catch {
+      console.log("✅ User refreshed:", currentUser);
+    } catch (error) {
+      console.log("❌ Failed to refresh user:", error);
       setUser(null);
     }
   };

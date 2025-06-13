@@ -3,68 +3,44 @@ import { KnownPlace } from "@/types/knownPlace";
 import { Flare } from "@/types/flare";
 import { User } from "@/types/user";
 
-// Helper function to get cookie value
-const getCookie = (name: string): string | null => {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) {
-    return parts.pop()?.split(';').shift() || null;
+// Token management
+const TOKEN_KEY = 'flare_auth_token';
+
+const getToken = (): string | null => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem(TOKEN_KEY);
   }
   return null;
 };
 
-const csrfBaseURL = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/api$/, '') || '';
-
-const initializeCsrf = async () => {
-  try {
-    await axios.get(`${csrfBaseURL}/sanctum/csrf-cookie`, {
-      withCredentials: true,
-    });
-    console.log("🔄 CSRF cookie initialized");
-  } catch (error) {
-    console.error('Failed to initialize CSRF:', error);
-    throw error; // Re-throw to handle in calling functions
+const setToken = (token: string): void => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(TOKEN_KEY, token);
   }
 };
 
-// Main API instance
+const removeToken = (): void => {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem(TOKEN_KEY);
+  }
+};
+
+// Main API instance - much simpler now!
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
-  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
   },
-  // Remove automatic XSRF handling - we'll do it manually
-  // xsrfCookieName: 'XSRF-TOKEN',
-  // xsrfHeaderName: 'X-XSRF-TOKEN',
 });
 
-// Add request interceptor to manually handle CSRF token
+// Request interceptor to add auth token
 api.interceptors.request.use(
-  async (config) => {
-    // For state-changing operations, ensure we have a CSRF token
-    if (['post', 'put', 'patch', 'delete'].includes(config.method?.toLowerCase() || '')) {
-      const token = getCookie('XSRF-TOKEN');
-      
-      if (!token) {
-        console.log("🔄 No CSRF token found, initializing...");
-        try {
-          await initializeCsrf();
-          // Get the token again after initialization
-          const newToken = getCookie('XSRF-TOKEN');
-          if (newToken) {
-            config.headers['X-XSRF-TOKEN'] = decodeURIComponent(newToken);
-          }
-        } catch (error) {
-          console.error("Failed to get CSRF token:", error);
-        }
-      } else {
-        // Set the CSRF token header manually
-        config.headers['X-XSRF-TOKEN'] = decodeURIComponent(token);
-      }
+  (config) => {
+    const token = getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
-    
     return config;
   },
   (error) => {
@@ -72,39 +48,19 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor with retry for CSRF token mismatch
+// Response interceptor to handle authentication errors
 api.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-
-    if (error.response?.status === 419 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      console.log("🔄 CSRF token expired, refreshing...");
-      
-      try {
-        await initializeCsrf();
-        
-        // Update the CSRF token in the original request
-        const newToken = getCookie('XSRF-TOKEN');
-        if (newToken) {
-          originalRequest.headers['X-XSRF-TOKEN'] = decodeURIComponent(newToken);
-        }
-        
-        return api.request(originalRequest);
-      } catch (csrfError) {
-        console.error("Failed to refresh CSRF token:", csrfError);
-        return Promise.reject(error);
-      }
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token is invalid or expired
+      removeToken();
+      // Don't redirect automatically - let the UserContext handle it
+      console.log("🔓 Token expired/invalid - removed from storage");
     }
-
     return Promise.reject(error);
   }
 );
-
-// Initialize CSRF token when module loads (but don't block)
-initializeCsrf().catch(console.error);
 
 type LoginCredentials = {
   email: string;
@@ -116,6 +72,12 @@ type RegisterCredentials = {
   email: string;
   password: string;
   password_confirmation: string;
+};
+
+type AuthResponse = {
+  user: User;
+  token: string;
+  message: string;
 };
 
 export async function testConnection(): Promise<{ message: string }> {
@@ -131,7 +93,7 @@ export async function testConnection(): Promise<{ message: string }> {
 
 export async function getCurrentUser(): Promise<User> {
   try {
-    const response = await api.get<User>("/me");
+    const response = await api.get<User>("/auth/user");
     console.log("✅ Current user fetched");
     return response.data;
   } catch (error: unknown) {
@@ -147,23 +109,18 @@ export async function login({
   email,
   password,
 }: LoginCredentials): Promise<User> {
-  // Ensure CSRF token before login
   try {
-    await initializeCsrf();
-  } catch (error) {
-    console.error("Failed to initialize CSRF for login:", error);
-    // Continue anyway, the request interceptor will handle it
-  }
-  
-  try {
-    await api.post("/login", {
+    const response = await api.post<AuthResponse>("/auth/login", {
       email,
       password,
     });
+    
     console.log("✅ Login successful");
     
-    // After successful login, fetch the current user
-    return await getCurrentUser();
+    // Store the token
+    setToken(response.data.token);
+    
+    return response.data.user;
   } catch (error: unknown) {
     if (axios.isAxiosError(error) && error.response) {
       console.error("❌ Login failed:", error.response.data);
@@ -182,20 +139,20 @@ export async function register({
   console.log("🔄 Preparing registration...");
   
   try {
-    // Ensure fresh CSRF token
-    await initializeCsrf();
-    
     console.log("📤 Attempting registration...");
-    await api.post("/register", {
+    const response = await api.post<AuthResponse>("/auth/register", {
       email,
       name,
       password,
       password_confirmation,
     });
+    
     console.log("✅ Register successful");
     
-    // After successful registration, fetch the current user
-    return await getCurrentUser();
+    // Store the token
+    setToken(response.data.token);
+    
+    return response.data.user;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       console.error("❌ Registration failed:", error.response?.data);
@@ -211,10 +168,17 @@ export async function register({
 
 export async function logout(): Promise<{ message: string }> {
   try {
-    const response = await api.post<{ message: string }>("/logout");
+    const response = await api.post<{ message: string }>("/auth/logout");
     console.log("✅ Logout successful");
+    
+    // Remove the token
+    removeToken();
+    
     return response.data;
   } catch (error: unknown) {
+    // Even if the API call fails, remove the token locally
+    removeToken();
+    
     if (axios.isAxiosError(error) && error.response) {
       throw new Error(error.response.data.message || "Logout failed");
     }
@@ -235,9 +199,13 @@ export async function getUserFlares(): Promise<Flare[]> {
   }
 }
 
-export async function postFlare(data: Omit<Flare, "id">): Promise<Flare> {
+export async function postFlare(data: Omit<Flare, "id" | "user_id">): Promise<Flare> {
   try {
-    const response = await api.post<Flare>("/flares", data);
+    // Remove user_id from data since backend gets it from token
+    const flareData = { ...data };
+    delete (flareData as any).user_id;
+    
+    const response = await api.post<Flare>("/flares", flareData);
     console.log("[FLARES] Flare posted:", response.data);
     return response.data;
   } catch (error: unknown) {
@@ -254,7 +222,7 @@ export async function searchNearbyKnownPlaces(
   radius: number = 200
 ): Promise<KnownPlace[]> {
   try {
-    const response = await api.get<KnownPlace[]>("/known-places/nearby", {
+    const response = await api.get<KnownPlace[]>("/flares/nearby/known-places", {
       params: { latitude, longitude, radius },
     });
     console.log("[KNOWN PLACES] Nearby search result:", response.data);
@@ -284,7 +252,7 @@ export async function fetchAllKnownPlaces(): Promise<KnownPlace[]> {
 }
 
 export async function postFlareWithPhoto(
-  data: Omit<Flare, "id" | "photo"> & { place?: { mapbox_id: string; name: string } },
+  data: Omit<Flare, "id" | "photo" | "user_id"> & { place?: { mapbox_id: string; name: string } },
   photo: File
 ): Promise<Flare> {
   try {
@@ -293,7 +261,7 @@ export async function postFlareWithPhoto(
     formData.append("latitude", String(data.latitude));
     formData.append("longitude", String(data.longitude));
     formData.append("note", data.note);
-    formData.append("user_id", String(data.user_id));
+    // Remove user_id - backend gets it from token
 
     if (data.category) {
       formData.append("category", data.category);
@@ -336,6 +304,15 @@ export async function deleteFlare(id: number): Promise<{ message: string }> {
     throw new Error("Network error while deleting flare");
   }
 }
+
+// Utility functions for token management
+export const isAuthenticated = (): boolean => {
+  return getToken() !== null;
+};
+
+export const clearAuth = (): void => {
+  removeToken();
+};
 
 // Add alias for backward compatibility
 export const fetchCurrentUser = getCurrentUser;

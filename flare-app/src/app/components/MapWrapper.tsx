@@ -76,6 +76,8 @@ const MapWrapper = () => {
                 src="/logo.png"
                 alt="logo"
                 onClick={() => router.push("/account")}
+                width={20}
+                height={20}
               />
             )}
             <AuthBtns />

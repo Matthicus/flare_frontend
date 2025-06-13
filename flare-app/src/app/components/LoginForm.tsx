@@ -40,12 +40,16 @@ const LoginForm = ({ onClose, onToggleForm }: Props) => {
     setLoading(true);
 
     try {
-      await login({ email, password });
-      const currentUser = await fetchCurrentUser();
-      setUser(currentUser);
-      console.log("Logged in user:", currentUser);
-      localStorage.setItem("loggedIn", "true");
-      window.location.reload();
+      const userData = await login({ email, password });
+      setUser(userData); // Set user immediately from login response
+      console.log("Logged in user:", userData);
+
+      // Close the modal after successful login
+      if (onClose) {
+        onClose();
+      }
+
+      // Don't reload the page - React state will handle the update
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);

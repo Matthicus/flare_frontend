@@ -53,6 +53,8 @@ const SearchBox = ({ onSelect }: Props) => {
           alt="search"
           className="w-5 h-5 object-contain"
           draggable={false}
+          width={20}
+          height={20}
         />
       </button>
 

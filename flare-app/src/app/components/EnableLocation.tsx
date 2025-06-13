@@ -21,6 +21,8 @@ const EnableLocation = ({ onEnable, enabled }: Props) => {
           alt="location"
           className="w-5 h-5 object-contain"
           draggable={false}
+          width={20}
+          height={20}
         />
       </button>
     </div>

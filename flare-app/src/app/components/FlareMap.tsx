@@ -264,6 +264,8 @@ const FlareMap = ({ viewport, setViewport, userLocation }: FlareMapProps) => {
                     className="w-8"
                     src="/blue_flare.png"
                     alt="Blue Flare"
+                    width={40}
+                    height={40}
                   />
                 )}
                 {flare.category === "violet" && (
@@ -271,6 +273,8 @@ const FlareMap = ({ viewport, setViewport, userLocation }: FlareMapProps) => {
                     className="w-8"
                     src="/violet_flare.png"
                     alt="Violet Flare"
+                    width={40}
+                    height={40}
                   />
                 )}
                 {flare.category === "regular" && (
@@ -278,6 +282,8 @@ const FlareMap = ({ viewport, setViewport, userLocation }: FlareMapProps) => {
                     className="w-8"
                     src="/orange_flare.png"
                     alt="Regular Flare"
+                    width={40}
+                    height={40}
                   />
                 )}
               </div>
