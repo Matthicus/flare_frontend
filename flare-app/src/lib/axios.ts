@@ -157,21 +157,8 @@ export async function register({
 }
 
 export async function logout(): Promise<{ message: string }> {
-  const logoutBaseURL = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/api$/, '') || '';
-
   try {
-    const response = await axios.post<{ message: string }>(
-      `${logoutBaseURL}/logout`,
-      {},
-      {
-        withCredentials: true,
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          "X-XSRF-TOKEN": getCookie("XSRF-TOKEN") || "",
-        },
-      }
-    );
+    const response = await api.post<{ message: string }>("/logout");
     console.log("✅ Logout successful");
     return response.data;
   } catch (error: unknown) {
