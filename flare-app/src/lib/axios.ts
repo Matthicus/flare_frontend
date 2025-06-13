@@ -88,17 +88,15 @@ export async function register({
   password,
   password_confirmation,
 }: RegisterCredentials): Promise<User> {
-  // Get CSRF cookie first
   console.log("🔄 Getting CSRF cookie...");
   await webApi.get("/sanctum/csrf-cookie");
   
-  // Debug: Check what cookies we have
+  // Debug: Check cookies
   console.log("🍪 All cookies:", document.cookie);
-  console.log("🔑 XSRF-TOKEN:", getCookie('XSRF-TOKEN'));
-  console.log("🔑 laravel_session:", getCookie('laravel_session'));
-  console.log("🔑 laravel_token:", getCookie('laravel_token'));
+  const xsrfToken = getCookie('XSRF-TOKEN');
+  console.log("🔑 XSRF-TOKEN found:", xsrfToken);
+  console.log("🔑 XSRF-TOKEN decoded:", xsrfToken ? decodeURIComponent(xsrfToken) : 'none');
   
-  // Small delay to ensure cookie is set
   await new Promise(resolve => setTimeout(resolve, 200));
   
   try {
@@ -112,12 +110,12 @@ export async function register({
     console.log("✅ Register successful");
     return response.data;
   } catch (error: unknown) {
-    console.error("❌ Registration failed:", error);
-    if (axios.isAxiosError(error) && error.response) {
-      console.error("Error details:", error.response.data);
-      throw new Error(error.response.data.message || "Registration failed");
+    if (axios.isAxiosError(error)) {
+      console.error("❌ Request headers sent:", error.config?.headers);
+      console.error("❌ Response status:", error.response?.status);
+      console.error("❌ Response data:", error.response?.data);
     }
-    throw new Error("Network error");
+    throw error;
   }
 }
 
