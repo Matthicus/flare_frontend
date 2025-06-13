@@ -198,13 +198,12 @@ export async function getUserFlares(): Promise<Flare[]> {
     throw new Error("Network error while fetching flares");
   }
 }
-
 export async function postFlare(data: Omit<Flare, "id" | "user_id">): Promise<Flare> {
   try {
     // Remove user_id from data since backend gets it from token
     const flareData = { ...data };
-    delete (flareData as any).user_id;
-    
+    delete (flareData as Partial<Flare>).user_id;
+         
     const response = await api.post<Flare>("/flares", flareData);
     console.log("[FLARES] Flare posted:", response.data);
     return response.data;

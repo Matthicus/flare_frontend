@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useContext } from "react";
-import { login, fetchCurrentUser, getUserFlares } from "../../lib/axios";
+import { login, getUserFlares } from "../../lib/axios";
 import { UserContext } from "@/context/UserContext";
 
 type Props = {
