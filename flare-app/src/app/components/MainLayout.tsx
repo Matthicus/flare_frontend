@@ -1,68 +1,48 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import HotFlares from "./HotFlares";
 import Logo from "./Logo";
-import { Flare } from "./HotFlares"; // or import from @/types/flare if you prefer
 import MapWrapper from "./MapWrapper";
-import { getAllFlares } from "@/lib/axios"; // Adjust the import path
+import { useFlares } from "@/hooks/useFlares";
 
 const MainLayout = () => {
-  const [flares, setFlares] = useState<Flare[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { flares, loading, error, addFlare, removeFlare } = useFlares();
+  const [flyToCoords, setFlyToCoords] = useState<{
+    lat: number;
+    lng: number;
+    zoom: number;
+  } | null>(null);
 
-  // Function to fetch all flares
-  const fetchFlares = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const allFlares = await getAllFlares();
-      setFlares(allFlares);
-
-      console.log("✅ Flares loaded successfully:", allFlares.length);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to fetch flares";
-      setError(errorMessage);
-      console.error("❌ Error loading flares:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Fetch flares when component mounts
-  useEffect(() => {
-    fetchFlares();
-  }, []);
-
-  // Optional: Auto-refresh every 30 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      console.log("🔄 Auto-refreshing flares...");
-      fetchFlares();
-    }, 30000); // 30 seconds
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // Handle fly to flare (you can integrate this with your MapWrapper)
+  // Handle fly to flare from HotFlares component
   const handleFlyToFlare = (lat: number, lng: number) => {
     console.log("🗺️ Flying to flare:", lat, lng);
-    // TODO: Integrate with your map component
+    setFlyToCoords({ lat, lng, zoom: 14 }); // This was missing!
   };
+
+  // Add debug logging
+  console.log("🔍 MainLayout Debug:");
+  console.log("- Loading:", loading);
+  console.log("- Error:", error);
+  console.log("- Flares count:", flares.length);
 
   return (
     <div className="relative w-screen h-screen">
       <Logo />
 
-      {/* Show HotFlares only when we have data and not loading */}
+      {/* Show HotFlares when we have data and not loading */}
       {!loading && flares.length > 0 && (
         <HotFlares flares={flares} onFlyToFlare={handleFlyToFlare} />
       )}
 
-      <MapWrapper />
+      {/* Pass flares and actions to MapWrapper */}
+      <MapWrapper
+        flyToCoords={flyToCoords}
+        onFlyComplete={() => setFlyToCoords(null)}
+        flares={flares}
+        addFlare={addFlare}
+        removeFlare={removeFlare}
+      />
 
       {/* Optional: Show loading indicator */}
       {loading && (
@@ -78,12 +58,6 @@ const MainLayout = () => {
       {error && (
         <div className="fixed top-4 right-4 bg-red-600/90 text-white p-3 rounded-lg shadow-xl z-50 max-w-sm">
           <p className="text-sm">Failed to load flares: {error}</p>
-          <button
-            onClick={fetchFlares}
-            className="mt-2 px-3 py-1 bg-red-700 hover:bg-red-800 rounded text-xs"
-          >
-            Retry
-          </button>
         </div>
       )}
     </div>

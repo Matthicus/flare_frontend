@@ -65,9 +65,7 @@ const HotFlares = ({ flares, onFlyToFlare }: HotFlaresProps) => {
         <div className="fixed bottom-0 right-0 left-0 md:left-auto md:bottom-6 md:right-6 bg-[#192736]/90 text-white rounded-t-xl md:rounded-xl shadow-xl z-50 max-h-[70vh] w-full md:w-96 transition-all">
           {/* Header with close button */}
           <div className="flex justify-between items-center p-4 border-b border-gray-600">
-            <h2 className="text-lg font-bold text-yellow-400">
-              🔥 Flares in your area
-            </h2>
+            <h2 className="text-lg font-bold text-yellow-400">🔥 Flares</h2>
             <button
               onClick={() => setIsExpanded(false)}
               className="text-white text-2xl p-1 hover:text-orange-400 cursor-pointer"
@@ -82,8 +80,8 @@ const HotFlares = ({ flares, onFlyToFlare }: HotFlaresProps) => {
               onClick={() => setActiveTab("hot")}
               className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
                 activeTab === "hot"
-                  ? "text-yellow-400 border-b-2 border-yellow-400 bg-gray-800/50 cursor-pointer"
-                  : "text-gray-300 hover:text-white hover:bg-gray-800/30 cursor-pointer"
+                  ? "text-yellow-400 border-b-2 border-yellow-400 bg-gray-800/50"
+                  : "text-gray-300 hover:text-white hover:bg-gray-800/30"
               }`}
             >
               Hot Flares
@@ -97,8 +95,8 @@ const HotFlares = ({ flares, onFlyToFlare }: HotFlaresProps) => {
               onClick={() => setActiveTab("all")}
               className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
                 activeTab === "all"
-                  ? "text-yellow-400 border-b-2 border-yellow-400 bg-gray-800/50 cursor-pointer"
-                  : "text-gray-300 hover:text-white hover:bg-gray-800/30 cursor-pointer"
+                  ? "text-yellow-400 border-b-2 border-yellow-400 bg-gray-800/50"
+                  : "text-gray-300 hover:text-white hover:bg-gray-800/30"
               }`}
             >
               All Flares

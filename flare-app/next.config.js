@@ -8,6 +8,16 @@ const nextConfig = {
       },
     ];
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "flare-backend-2.ddev.site",
+        port: "",
+        pathname: "/storage/**",
+      },
+    ],
+  },
 };
 
 module.exports = nextConfig;

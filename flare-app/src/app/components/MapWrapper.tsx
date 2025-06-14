@@ -1,6 +1,6 @@
 "use client";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { ViewState } from "react-map-gl/mapbox";
 import FlareMap from "./FlareMap";
 import SearchBox from "./SearchBox";
@@ -9,10 +9,27 @@ import EnableLocation from "./EnableLocation";
 import AuthBtns from "./AuthBtns";
 import router from "next/router";
 import { UserContext } from "@/context/UserContext";
-import { useContext } from "react";
 import Image from "next/image";
+import { Flare } from "@/types/flare";
 
-const MapWrapper = () => {
+type MapWrapperProps = {
+  flyToCoords?: { lat: number; lng: number; zoom: number } | null;
+  onFlyComplete?: () => void;
+  flares: Flare[];
+  addFlare: (
+    flareData: Omit<Flare, "id" | "user_id">,
+    photo?: File
+  ) => Promise<Flare>;
+  removeFlare: (id: number) => Promise<void>;
+};
+
+const MapWrapper = ({
+  flyToCoords,
+  onFlyComplete,
+  flares,
+  addFlare,
+  removeFlare,
+}: MapWrapperProps) => {
   const [viewport, setViewport] = useState<ViewState>({
     latitude: 36.38282,
     longitude: -122.474737,
@@ -26,6 +43,7 @@ const MapWrapper = () => {
   const [locationEnabled, setLocationEnabled] = useState(false);
   const userLocation = useGeolocation(locationEnabled);
 
+  // Handle user location updates
   useEffect(() => {
     console.log("userLocation:", userLocation);
     if (
@@ -42,6 +60,25 @@ const MapWrapper = () => {
     }
   }, [userLocation]);
 
+  // Handle fly to coordinates from HotFlares
+  useEffect(() => {
+    if (flyToCoords) {
+      setViewport((prev) => ({
+        ...prev,
+        latitude: flyToCoords.lat,
+        longitude: flyToCoords.lng,
+        zoom: flyToCoords.zoom,
+      }));
+
+      // Call onFlyComplete after the transition
+      if (onFlyComplete) {
+        setTimeout(() => {
+          onFlyComplete();
+        }, 1000); // Estimated transition time
+      }
+    }
+  }, [flyToCoords, onFlyComplete]);
+
   return (
     <>
       <div className="relative w-screen h-screen">
@@ -49,6 +86,9 @@ const MapWrapper = () => {
           viewport={viewport}
           setViewport={setViewport}
           userLocation={userLocation}
+          flares={flares}
+          addFlare={addFlare}
+          removeFlare={removeFlare}
         />
 
         <div className="absolute top-4 left-4 z-40 flex gap-4">

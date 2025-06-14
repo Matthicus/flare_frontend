@@ -1,0 +1,31 @@
+/* styles/mapAnimations.css */
+
+@keyframes pulsate {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.15);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.flare-marker img {
+    animation: pulsate 2s ease-in-out infinite;
+}
+
+/* Custom popup styling that can't be done with Tailwind */
+.flare-popup>div {
+    background: #192736 !important;
+    color: white !important;
+}
+
+.mapboxgl-popup-close-button {
+    font-size: 24px !important;
+    top: 8px !important;
+    right: 10px !important;
+}
