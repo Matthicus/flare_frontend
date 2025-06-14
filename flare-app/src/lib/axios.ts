@@ -91,6 +91,22 @@ export async function testConnection(): Promise<{ message: string }> {
   }
 }
 
+export async function getAllFlares(): Promise<Flare[]> {
+  try {
+    // This uses your public route - no auth required
+    const response = await api.get<Flare[]>("/flares");
+    console.log("[FLARES] All public flares fetched:", response.data.length, "flares");
+    return response.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error) && error.response) {
+      console.error("[FLARES] Failed to fetch all flares:", error.response.data);
+      throw new Error(error.response.data.message || "Failed to fetch all flares");
+    }
+    console.error("[FLARES] Network error while fetching all flares:", error);
+    throw new Error("Network error while fetching flares");
+  }
+}
+
 export async function getCurrentUser(): Promise<User> {
   try {
     const response = await api.get<User>("/auth/user");
