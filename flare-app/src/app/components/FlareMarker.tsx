@@ -41,8 +41,13 @@ const FlareMarker = ({ flare, onMarkerClick }: FlareMarkerProps) => {
       <div
         className="flare-marker cursor-pointer"
         onClick={(e) => {
+          console.log("🖱️ FlareMarker clicked! Flare ID:", flare.id);
+          console.log("🖱️ Event:", e);
           e.stopPropagation();
+          e.preventDefault(); // Add this line too
+          console.log("🖱️ About to call onMarkerClick with:", flare.id);
           onMarkerClick(flare.id);
+          console.log("🖱️ onMarkerClick called");
         }}
       >
         <Image

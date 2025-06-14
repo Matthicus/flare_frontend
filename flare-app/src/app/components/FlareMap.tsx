@@ -122,10 +122,11 @@ const FlareMap = ({
       if (flare) {
         console.log("📍 Flare position:", flare.latitude, flare.longitude);
 
-        // If we're already zoomed in enough (zoom > 12), just show popup
-        if (viewport.zoom > 12) {
+        // If we're already zoomed in enough (zoom > 15), just show popup
+        // Changed from 12 to 15 so it zooms more often
+        if (viewport.zoom > 15) {
           console.log(
-            "✅ Already zoomed in (zoom > 12), showing popup immediately"
+            "✅ Already zoomed in (zoom > 15), showing popup immediately"
           );
           setSelectedFlareId(flareId);
         } else {
@@ -137,14 +138,14 @@ const FlareMap = ({
             "zoom:",
             viewport.zoom
           );
-          console.log("📍 To:", flare.latitude, flare.longitude, "zoom: 14");
+          console.log("📍 To:", flare.latitude, flare.longitude, "zoom: 16");
 
           // If zoomed out, fly to the flare location first, then show popup
           setViewport({
             ...viewport,
             latitude: flare.latitude,
             longitude: flare.longitude,
-            zoom: 14,
+            zoom: 16, // Changed from 14 to 16 for closer zoom
           });
 
           console.log("⏰ Setting timeout to show popup in 1 second...");
