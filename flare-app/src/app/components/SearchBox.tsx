@@ -39,11 +39,11 @@ const SearchBox = ({ onSelect }: Props) => {
   }, [open]);
 
   return (
-    <div className="relative z-50 flex items-center ml-4">
+    <div className="relative z-50 flex items-center">
       {/* Search button */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className={`p-2 rounded bg-accent-color hover:bg-text-orange transition-colors flex items-center justify-center ml-12 cursor-pointer ${
+        className={`p-2 rounded bg-accent-color hover:bg-text-orange transition-colors flex items-center justify-center cursor-pointer ${
           open ? "bg-[#001c55]" : ""
         }`}
         aria-label="Toggle search"
@@ -80,7 +80,7 @@ const SearchBox = ({ onSelect }: Props) => {
 
       {/* Results dropdown */}
       {open && results.length > 0 && (
-        <ul className="absolute top-full mt-1 left-12 w-48 sm:w-72 bg-[#000718] rounded-xl shadow-lg p-3 max-h-40 overflow-y-auto text-white text-sm">
+        <ul className="absolute top-full mt-1 left-0 w-48 sm:w-72 bg-[#000718] rounded-xl shadow-lg p-3 max-h-40 overflow-y-auto text-white text-sm">
           {results.map((result) => (
             <li
               key={result.id}

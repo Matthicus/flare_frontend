@@ -71,7 +71,7 @@ const LoginForm = ({ onClose, onToggleForm }: Props) => {
       setFlaresLoading(true);
       try {
         const data = await getUserFlares();
-        setFlares(data);
+        setFlares(data.flares);
       } catch (err: unknown) {
         if (err instanceof Error) {
           console.error("Failed to fetch flares:", err.message);

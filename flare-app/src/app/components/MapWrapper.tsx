@@ -7,7 +7,7 @@ import SearchBox from "./SearchBox";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import EnableLocation from "./EnableLocation";
 import AuthBtns from "./AuthBtns";
-import router from "next/router";
+import { useRouter } from "next/navigation";
 import { UserContext } from "@/context/UserContext";
 import Image from "next/image";
 import { Flare } from "@/types/flare";
@@ -30,6 +30,7 @@ const MapWrapper = ({
   addFlare,
   removeFlare,
 }: MapWrapperProps) => {
+  const router = useRouter();
   const [viewport, setViewport] = useState<ViewState>({
     latitude: 36.38282,
     longitude: -122.474737,
@@ -59,6 +60,15 @@ const MapWrapper = ({
       }));
     }
   }, [userLocation]);
+
+  const handleRecenter = (lat: number, lng: number) => {
+    setViewport((prev) => ({
+      ...prev,
+      latitude: lat,
+      longitude: lng,
+      zoom: 16,
+    }));
+  };
 
   // Handle fly to coordinates from HotFlares
   useEffect(() => {
@@ -91,34 +101,52 @@ const MapWrapper = ({
           removeFlare={removeFlare}
         />
 
-        <div className="absolute top-4 left-4 z-40 flex gap-4">
-          <EnableLocation
-            onEnable={() => setLocationEnabled(true)}
-            enabled={locationEnabled}
-          />
-          <SearchBox
-            onSelect={(lng, lat) =>
-              setViewport((prev) => ({
-                ...prev,
-                latitude: lat,
-                longitude: lng,
-                zoom: 13,
-              }))
-            }
-          />
+        {/* Left side controls - stacked vertically to prevent overlap */}
+        <div className="absolute top-4 left-4 z-40">
+          <div className="flex gap-4">
+            <EnableLocation
+              onEnable={() => setLocationEnabled(true)}
+              enabled={locationEnabled}
+              userLocation={userLocation}
+              onRecenter={handleRecenter}
+            />
+            <SearchBox
+              onSelect={(lng, lat) =>
+                setViewport((prev) => ({
+                  ...prev,
+                  latitude: lat,
+                  longitude: lng,
+                  zoom: 13,
+                }))
+              }
+            />
+          </div>
         </div>
 
+        {/* Right side controls */}
         <div className="absolute top-4 right-4 z-40">
           <div className="flex items-center gap-4">
             {user && (
-              <Image
-                className="w-5 h-5 cursor-pointer hover:scale-110 transition"
-                src="/logo.png"
-                alt="logo"
+              <div
+                className="relative w-10 h-10 cursor-pointer hover:scale-110 transition-transform duration-200 rounded-full overflow-hidden border-2 border-white shadow-lg"
                 onClick={() => router.push("/account")}
-                width={20}
-                height={20}
-              />
+              >
+                {user.profile_photo_url ? (
+                  <Image
+                    src={user.profile_photo_url}
+                    alt="Profile picture"
+                    fill
+                    className="object-cover"
+                    sizes="40px"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
+                    {user.name?.charAt(0).toUpperCase() ||
+                      user.username?.charAt(0).toUpperCase() ||
+                      "U"}
+                  </div>
+                )}
+              </div>
             )}
             <AuthBtns />
           </div>
