@@ -93,11 +93,12 @@ const Logo = () => {
                   <p>
                     Flare is a location-based social platform that allows users
                     to share moments, events, and experiences tied to specific
-                    geographic locations. Create flares to mark interesting
-                    spots, share photos, and connect with others in your area.
+                    geographic locations. Create &quot;flares&quot; to mark
+                    interesting spots, share photos, and connect with others in
+                    your area.
                   </p>
                   <p>
-                    {`Whether you're discovering`}, sharing local insights, or
+                    Whether you&apos;re discovering, sharing local insights, or
                     connecting with your community, Flare helps you explore the
                     world around you in a whole new way.
                   </p>
