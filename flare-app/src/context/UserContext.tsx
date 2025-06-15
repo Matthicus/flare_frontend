@@ -38,6 +38,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     }
 
     try {
+      console.log("🔄 REFRESHING USER - called from:", new Error().stack); // This will show us WHO is calling refreshUser
       const currentUser = await fetchCurrentUser();
       setUser(currentUser);
       console.log("✅ User refreshed:", currentUser);

@@ -59,11 +59,29 @@ const AccountPage = () => {
         getUserFlares(),
       ]);
 
+      console.log("🔍 Profile data from API:", profileData);
+
+      console.log("Flares data received:", flaresData);
+
+      console.log("Flares data received:", flaresData);
+
       setProfile(profileData);
       setStats(statsData);
-      setUserFlares(flaresData.flares || []);
+
+      // Handle both response formats
+      if (flaresData.flares && Array.isArray(flaresData.flares)) {
+        setUserFlares(flaresData.flares);
+      } else if (flaresData.flares && Array.isArray(flaresData.flares)) {
+        setUserFlares(flaresData.flares);
+      } else if (Array.isArray(flaresData)) {
+        setUserFlares(flaresData);
+      } else {
+        console.error("Unexpected flares data format:", flaresData);
+        setUserFlares([]);
+      }
+
       setEditName(profileData.name);
-      setEditUsername(profileData.username);
+      setEditUsername(profileData.username || "");
     } catch (err) {
       console.error("Failed to load user data:", err);
       setError("Failed to load profile data");
@@ -242,7 +260,7 @@ const AccountPage = () => {
                       onClick={() => {
                         setIsEditing(false);
                         setEditName(profile.name);
-                        setEditUsername(profile.username);
+                        setEditUsername(profile.username || "");
                         setError("");
                       }}
                       className="text-gray-500 hover:text-gray-700 text-sm"
@@ -280,9 +298,12 @@ const AccountPage = () => {
                       value={editUsername}
                       onChange={(e) => setEditUsername(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"
+                      placeholder="Enter username"
                     />
                   ) : (
-                    <p className="text-gray-900">@{profile.username}</p>
+                    <p className="text-gray-900">
+                      {profile.username ? `@${profile.username}` : "Not set"}
+                    </p>
                   )}
                 </div>
 
@@ -322,28 +343,37 @@ const AccountPage = () => {
                       className="border border-gray-200 rounded-lg p-3"
                     >
                       <div className="flex items-center justify-between">
-                        <div>
+                        <div className="flex-1">
                           <p className="font-medium text-gray-900">
-                            {flare.note}
+                            {flare.note || "No description"}
                           </p>
                           <p className="text-sm text-gray-600">
-                            {flare.place?.name || "Unknown location"} •{" "}
+                            {flare.category} •{" "}
                             {flare.created_at
                               ? new Date(flare.created_at).toLocaleDateString()
                               : "Recently"}
                           </p>
                         </div>
-                        <span
-                          className={`px-2 py-1 text-xs rounded-full ${
-                            flare.category === "blue"
-                              ? "bg-blue-100 text-blue-800"
-                              : flare.category === "violet"
-                              ? "bg-purple-100 text-purple-800"
-                              : "bg-gray-100 text-gray-800"
-                          }`}
-                        >
-                          {flare.category}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          {flare.photo_url && (
+                            <img
+                              src={flare.photo_url}
+                              alt="Flare photo"
+                              className="w-10 h-10 rounded object-cover"
+                            />
+                          )}
+                          <span
+                            className={`px-2 py-1 text-xs rounded-full ${
+                              flare.category === "blue"
+                                ? "bg-blue-100 text-blue-800"
+                                : flare.category === "violet"
+                                ? "bg-purple-100 text-purple-800"
+                                : "bg-gray-100 text-gray-800"
+                            }`}
+                          >
+                            {flare.category}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   ))}

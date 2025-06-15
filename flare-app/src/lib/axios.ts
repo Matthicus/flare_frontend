@@ -228,13 +228,21 @@ export const updateProfilePhoto = async (photo: File): Promise<UserProfile> => {
   try {
     const formData = new FormData();
     formData.append("photo", photo);
-    
+        
     const response = await api.post<{ user: UserProfile; message: string }>("/user/profile-photo", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
     });
+    
     console.log("✅ Profile photo updated");
+    
+    // Add debugging logs here
+console.log("✅ Profile photo updated");
+console.log("📸 Full API response:", response.data);
+console.log("📸 New profile_photo_url:", response.data.user.profile_photo_url);
+console.log("📸 User object:", response.data.user);
+    
     return response.data.user;
   } catch (error: unknown) {
     if (axios.isAxiosError(error) && error.response) {
@@ -261,9 +269,14 @@ export const deleteProfilePhoto = async (): Promise<UserProfile> => {
 
 export const getUserFlares = async (): Promise<{ flares: Flare[]; total_flares: number }> => {
   try {
-    const response = await api.get<{ flares: Flare[]; total_flares: number }>("/user/flares");
-    console.log("✅ User flares fetched:", response.data.total_flares, "flares");
-    return response.data;
+    const response = await api.get("/user/flares");
+    console.log("✅ User flares fetched:", response.data.total, "flares");
+    
+    // Transform the API response to match the expected format
+    return {
+      flares: response.data.data || [],
+      total_flares: response.data.total || 0
+    };
   } catch (error: unknown) {
     if (axios.isAxiosError(error) && error.response) {
       console.error("❌ Failed to fetch user flares:", error.response.data);
