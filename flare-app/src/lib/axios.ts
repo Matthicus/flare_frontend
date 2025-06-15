@@ -1,7 +1,7 @@
 import axios from "axios";
 import { KnownPlace } from "@/types/knownPlace";
 import { Flare } from "@/types/flare";
-import { User } from "@/types/user";
+import { User, UserProfile, UserStats, UpdateProfileData } from "@/types/user";
 
 // Token management
 const TOKEN_KEY = 'flare_auth_token';
@@ -70,6 +70,7 @@ type LoginCredentials = {
 type RegisterCredentials = {
   name: string;
   email: string;
+  username: string;
   password: string;
   password_confirmation: string;
 };
@@ -146,40 +147,31 @@ export async function login({
   }
 }
 
-export async function register({
-  email,
-  name,
-  password,
-  password_confirmation,
-}: RegisterCredentials): Promise<User> {
-  console.log("🔄 Preparing registration...");
-  
+// Updated registration function with username
+export const registerUser = async (userData: RegisterCredentials): Promise<AuthResponse> => {
   try {
-    console.log("📤 Attempting registration...");
-    const response = await api.post<AuthResponse>("/auth/register", {
-      email,
-      name,
-      password,
-      password_confirmation,
-    });
-    
-    console.log("✅ Register successful");
+    const response = await api.post<AuthResponse>("/auth/register", userData);
+    console.log("✅ Registration successful");
     
     // Store the token
     setToken(response.data.token);
     
-    return response.data.user;
+    return response.data;
   } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      console.error("❌ Registration failed:", error.response?.data);
-      if (error.response?.data?.errors) {
-        const errorMessages = Object.values(error.response.data.errors).flat();
-        throw new Error(errorMessages.join(', '));
-      }
-      throw new Error(error.response?.data?.message || "Registration failed");
+    if (axios.isAxiosError(error) && error.response) {
+      console.error("❌ Registration failed:", error.response.data);
+      throw error; // Re-throw to preserve error structure for form validation
     }
     throw new Error("Network error during registration");
   }
+};
+
+// Legacy register function for backward compatibility
+export async function register(userData: Omit<RegisterCredentials, 'username'>): Promise<User> {
+  console.warn("Warning: Using legacy register function. Please update to use registerUser with username.");
+  const response = await api.post<AuthResponse>("/auth/register", userData);
+  setToken(response.data.token);
+  return response.data.user;
 }
 
 export async function logout(): Promise<{ message: string }> {
@@ -202,18 +194,101 @@ export async function logout(): Promise<{ message: string }> {
   }
 }
 
-export async function getUserFlares(): Promise<Flare[]> {
+// ==== USER PROFILE FUNCTIONS ====
+
+export const getUserProfile = async (): Promise<UserProfile> => {
   try {
-    const response = await api.get<Flare[]>("/flares");
-    console.log("[FLARES] User flares fetched:", response.data);
+    const response = await api.get<UserProfile>("/user/");
+    console.log("✅ User profile fetched");
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error) && error.response) {
+      console.error("❌ Failed to fetch user profile:", error.response.data);
+      throw new Error(error.response.data.message || "Failed to fetch user profile");
+    }
+    throw new Error("Network error while fetching user profile");
+  }
+};
+
+export const updateUserProfile = async (data: UpdateProfileData): Promise<UserProfile> => {
+  try {
+    const response = await api.put<{ user: UserProfile; message: string }>("/user/profile", data);
+    console.log("✅ User profile updated");
+    return response.data.user;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error) && error.response) {
+      console.error("❌ Failed to update user profile:", error.response.data);
+      throw error; // Re-throw to preserve error structure for form validation
+    }
+    throw new Error("Network error while updating user profile");
+  }
+};
+
+export const updateProfilePhoto = async (photo: File): Promise<UserProfile> => {
+  try {
+    const formData = new FormData();
+    formData.append("photo", photo);
+    
+    const response = await api.post<{ user: UserProfile; message: string }>("/user/profile-photo", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    console.log("✅ Profile photo updated");
+    return response.data.user;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error) && error.response) {
+      console.error("❌ Failed to update profile photo:", error.response.data);
+      throw new Error(error.response.data.message || "Failed to update profile photo");
+    }
+    throw new Error("Network error while updating profile photo");
+  }
+};
+
+export const deleteProfilePhoto = async (): Promise<UserProfile> => {
+  try {
+    const response = await api.delete<{ user: UserProfile; message: string }>("/user/profile-photo");
+    console.log("✅ Profile photo deleted");
+    return response.data.user;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error) && error.response) {
+      console.error("❌ Failed to delete profile photo:", error.response.data);
+      throw new Error(error.response.data.message || "Failed to delete profile photo");
+    }
+    throw new Error("Network error while deleting profile photo");
+  }
+};
+
+export const getUserFlares = async (): Promise<{ flares: Flare[]; total_flares: number }> => {
+  try {
+    const response = await api.get<{ flares: Flare[]; total_flares: number }>("/user/flares");
+    console.log("✅ User flares fetched:", response.data.total_flares, "flares");
+    return response.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error) && error.response) {
+      console.error("❌ Failed to fetch user flares:", error.response.data);
       throw new Error(error.response.data.message || "Failed to fetch user flares");
     }
-    throw new Error("Network error while fetching flares");
+    throw new Error("Network error while fetching user flares");
   }
-}
+};
+
+export const getUserStats = async (): Promise<UserStats> => {
+  try {
+    const response = await api.get<UserStats>("/user/stats");
+    console.log("✅ User stats fetched");
+    return response.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error) && error.response) {
+      console.error("❌ Failed to fetch user stats:", error.response.data);
+      throw new Error(error.response.data.message || "Failed to fetch user stats");
+    }
+    throw new Error("Network error while fetching user stats");
+  }
+};
+
+// ==== FLARE FUNCTIONS ====
+
 export async function postFlare(data: Omit<Flare, "id" | "user_id">): Promise<Flare> {
   try {
     // Remove user_id from data since backend gets it from token
@@ -228,41 +303,6 @@ export async function postFlare(data: Omit<Flare, "id" | "user_id">): Promise<Fl
       throw new Error(error.response.data.message || "Failed to post flare");
     }
     throw new Error("Network error while posting flare");
-  }
-}
-
-export async function searchNearbyKnownPlaces(
-  latitude: number,
-  longitude: number,
-  radius: number = 200
-): Promise<KnownPlace[]> {
-  try {
-    const response = await api.get<KnownPlace[]>("/flares/nearby/known-places", {
-      params: { latitude, longitude, radius },
-    });
-    console.log("[KNOWN PLACES] Nearby search result:", response.data);
-    return response.data;
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      console.error("[KNOWN PLACES] Search failed:", error.response?.data || error.message);
-    } else {
-      console.error("[KNOWN PLACES] Search failed:", error);
-    }
-    throw error;
-  }
-}
-
-export async function fetchAllKnownPlaces(): Promise<KnownPlace[]> {
-  try {
-    const res = await api.get<KnownPlace[]>("/known-places");
-    return res.data;
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      console.error("Failed to fetch known places:", error.response?.data || error.message);
-    } else {
-      console.error("Failed to fetch known places:", error);
-    }
-    throw error;
   }
 }
 
@@ -319,6 +359,45 @@ export async function deleteFlare(id: number): Promise<{ message: string }> {
     throw new Error("Network error while deleting flare");
   }
 }
+
+// ==== PLACES FUNCTIONS ====
+
+export async function searchNearbyKnownPlaces(
+  latitude: number,
+  longitude: number,
+  radius: number = 200
+): Promise<KnownPlace[]> {
+  try {
+    const response = await api.get<KnownPlace[]>("/flares/nearby/known-places", {
+      params: { latitude, longitude, radius },
+    });
+    console.log("[KNOWN PLACES] Nearby search result:", response.data);
+    return response.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      console.error("[KNOWN PLACES] Search failed:", error.response?.data || error.message);
+    } else {
+      console.error("[KNOWN PLACES] Search failed:", error);
+    }
+    throw error;
+  }
+}
+
+export async function fetchAllKnownPlaces(): Promise<KnownPlace[]> {
+  try {
+    const res = await api.get<KnownPlace[]>("/known-places");
+    return res.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      console.error("Failed to fetch known places:", error.response?.data || error.message);
+    } else {
+      console.error("Failed to fetch known places:", error);
+    }
+    throw error;
+  }
+}
+
+// ==== UTILITY FUNCTIONS ====
 
 // Utility functions for token management
 export const isAuthenticated = (): boolean => {

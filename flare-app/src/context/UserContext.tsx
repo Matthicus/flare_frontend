@@ -1,12 +1,18 @@
 "use client";
 import React, { createContext, useState, useEffect, ReactNode } from "react";
-import { fetchCurrentUser, isAuthenticated } from "@/lib/axios"; // Add isAuthenticated import
+import { fetchCurrentUser, isAuthenticated } from "@/lib/axios";
 
 type User = {
   id: number;
   name: string;
   email: string;
-  avatar?: string;
+  username: string;
+  profile_photo_url?: string | null;
+  profile_photo_path?: string | null;
+  created_at?: string;
+  updated_at?: string;
+  email_verified_at?: string | null;
+  avatar?: string; // Keep for backward compatibility
 } | null;
 
 type UserContextType = {
