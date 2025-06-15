@@ -342,7 +342,7 @@ const AccountPage = () => {
               </h2>
               {userFlares.length === 0 ? (
                 <p className="text-gray-600">
-                  You haven't created any flares yet.
+                  {`You haven't created any flares yet`}
                 </p>
               ) : (
                 <div className="space-y-3">
