@@ -110,8 +110,11 @@ const AccountPage = () => {
       setSuccess("Profile updated successfully!");
 
       setTimeout(() => setSuccess(""), 3000);
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to update profile");
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to load profile data";
+      console.error("Failed to load user data:", err);
+      setError(errorMessage);
     } finally {
       setUpdating(false);
     }
@@ -144,8 +147,11 @@ const AccountPage = () => {
       setSuccess("Profile photo updated!");
 
       setTimeout(() => setSuccess(""), 3000);
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to upload photo");
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to upload photo";
+      console.error("Upload failed:", err);
+      setError(errorMessage);
     } finally {
       setPhotoUploading(false);
     }
@@ -162,8 +168,11 @@ const AccountPage = () => {
       setSuccess("Profile photo deleted!");
 
       setTimeout(() => setSuccess(""), 3000);
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to delete photo");
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to update profile";
+      console.error("Profile update failed:", err);
+      setError(errorMessage);
     } finally {
       setPhotoUploading(false);
     }
@@ -356,9 +365,11 @@ const AccountPage = () => {
                         </div>
                         <div className="flex items-center gap-2">
                           {flare.photo_url && (
-                            <img
+                            <Image
                               src={flare.photo_url}
                               alt="Flare photo"
+                              width={10}
+                              height={10}
                               className="w-10 h-10 rounded object-cover"
                             />
                           )}
@@ -403,7 +414,8 @@ const AccountPage = () => {
                       alt="Profile photo"
                       fill
                       className="object-cover"
-                      sizes="128px"
+                      width={128}
+                      height={128}
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-2xl font-semibold">
