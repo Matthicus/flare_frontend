@@ -207,7 +207,7 @@ export async function logout(): Promise<{ message: string }> {
 
 export const getUserProfile = async (): Promise<UserProfile> => {
   try {
-    const response = await api.get<UserProfile>("/user/");
+    const response = await api.get<UserProfile>("/user");
     console.log("✅ User profile fetched");
     return response.data;
   } catch (error: unknown) {
