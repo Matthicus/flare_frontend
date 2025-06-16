@@ -1,6 +1,6 @@
 "use client";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { ViewState } from "react-map-gl/mapbox";
 import FlareMap from "./FlareMap";
 import SearchBox from "./SearchBox";
@@ -44,13 +44,17 @@ const MapWrapper = ({
   const [locationEnabled, setLocationEnabled] = useState(false);
   const userLocation = useGeolocation(locationEnabled);
 
-  // Handle user location updates
+  // Track if we've already centered on user location (prevent auto-centering)
+  const hasInitiallyCentered = useRef(false);
+
+  // Handle user location updates - ONLY center once on first load
   useEffect(() => {
     console.log("userLocation:", userLocation);
     if (
       userLocation &&
       userLocation.lat !== undefined &&
-      userLocation.lng !== undefined
+      userLocation.lng !== undefined &&
+      !hasInitiallyCentered.current // Only center once!
     ) {
       setViewport((prev) => ({
         ...prev,
@@ -58,6 +62,8 @@ const MapWrapper = ({
         longitude: userLocation.lng,
         zoom: 14,
       }));
+      hasInitiallyCentered.current = true; // Mark as centered
+      console.log("🎯 Centered map on user location (first time only)");
     }
   }, [userLocation]);
 
@@ -68,6 +74,7 @@ const MapWrapper = ({
       longitude: lng,
       zoom: 16,
     }));
+    console.log("🎯 Manual recenter to:", lat, lng);
   };
 
   // Handle fly to coordinates from HotFlares
