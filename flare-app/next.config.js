@@ -18,7 +18,7 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "flare-app-q3qkb.ondigitalocean.app", // production
-        pathname: "/storage/**",
+        pathname: "workspace/storage/**",
       },
     ],
   },
