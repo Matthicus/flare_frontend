@@ -94,8 +94,17 @@ export async function testConnection(): Promise<{ message: string }> {
 
 export async function getAllFlares(): Promise<Flare[]> {
   try {
-    // This uses your public route - no auth required
-    const response = await api.get<Flare[]>("/flares");
+    // Add cache-busting timestamp and no-cache headers
+    const response = await api.get<Flare[]>("/flares", {
+      params: {
+        t: Date.now() // Cache-busting timestamp
+      },
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    });
     console.log("[FLARES] All public flares fetched:", response.data.length, "flares");
     return response.data;
   } catch (error: unknown) {

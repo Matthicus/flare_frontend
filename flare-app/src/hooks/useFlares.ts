@@ -15,42 +15,10 @@ export const useFlares = () => {
     return "regular";
   };
 
-  // Load flares from localStorage on mount
+  // Load flares from API on mount - ALWAYS fetch fresh data
   useEffect(() => {
-    const loadFlares = () => {
-      try {
-        const saved = localStorage.getItem("flares");
-        if (saved) {
-          const { flares: savedFlares, timestamp } = JSON.parse(saved);
-          const isExpired = Date.now() - timestamp > 24 * 60 * 60 * 1000; // 24 hours
-          
-          if (!isExpired) {
-            setFlares(savedFlares);
-            setLoading(false);
-            return;
-          } else {
-            localStorage.removeItem("flares");
-          }
-        }
-      } catch (error) {
-        console.error("Failed to load flares from localStorage:", error);
-        localStorage.removeItem("flares");
-      }
-      
-      // If no valid cached data, fetch from API
-      fetchFlaresFromAPI();
-    };
-
-    loadFlares();
+    fetchFlaresFromAPI();
   }, []);
-
-  // Save flares to localStorage whenever flares change
-  useEffect(() => {
-    if (flares.length > 0) {
-      const dataToStore = { flares, timestamp: Date.now() };
-      localStorage.setItem("flares", JSON.stringify(dataToStore));
-    }
-  }, [flares]);
 
   // Fetch flares from API
   const fetchFlaresFromAPI = async () => {
@@ -100,30 +68,10 @@ export const useFlares = () => {
         savedFlare = await postFlare(flareData);
       }
 
-      // Check if there's an existing flare at the same location
-      const existingFlareIndex = flares.findIndex(
-        (f) =>
-          Math.abs(f.latitude - flareData.latitude) < 0.0001 &&
-          Math.abs(f.longitude - flareData.longitude) < 0.0001
-      );
-
-      if (existingFlareIndex !== -1) {
-        // Update existing flare participant count
-        const updatedFlares = [...flares];
-        const existingFlare = updatedFlares[existingFlareIndex];
-
-        existingFlare.participantsCount = (existingFlare.participantsCount ?? 1) + 1;
-        existingFlare.category = getCategory(existingFlare.participantsCount);
-
-        setFlares(updatedFlares);
-        return existingFlare;
-      } else {
-        // Add new flare
-        savedFlare.participantsCount = 1;
-        savedFlare.category = getCategory(1);
-        setFlares((prev) => [...prev, savedFlare]);
-        return savedFlare;
-      }
+      // 🔥 IMPORTANT: Refresh ALL flares after creating one
+      await fetchFlaresFromAPI();
+      
+      return savedFlare;
     } catch (error) {
       console.error("Failed to add flare:", error);
       throw error;
@@ -151,7 +99,8 @@ export const useFlares = () => {
   const removeFlare = async (id: number): Promise<void> => {
     try {
       await deleteFlare(id);
-      setFlares((prev) => prev.filter((flare) => flare.id !== id));
+      // 🔥 IMPORTANT: Refresh ALL flares after deleting one
+      await fetchFlaresFromAPI();
       console.log("✅ Flare deleted:", id);
     } catch (error) {
       console.error("Failed to delete flare:", error);
@@ -167,7 +116,6 @@ export const useFlares = () => {
   // Clear all flares (useful for logout)
   const clearFlares = () => {
     setFlares([]);
-    localStorage.removeItem("flares");
   };
 
   // Get flares within a certain radius of a location
