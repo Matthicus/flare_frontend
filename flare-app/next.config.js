@@ -4,7 +4,7 @@ const nextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "https://flare.ddev.site/api/:path*",
+        destination: "https://flare.ddev.site/api/:path*", // <-- only used in dev
       },
     ];
   },
@@ -12,8 +12,12 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "flare-backend-2.ddev.site",
-        port: "",
+        hostname: "flare-backend-2.ddev.site", // dev
+        pathname: "/storage/**",
+      },
+      {
+        protocol: "https",
+        hostname: "flare-app-q3qkb.ondigitalocean.app", // production
         pathname: "/storage/**",
       },
     ],
