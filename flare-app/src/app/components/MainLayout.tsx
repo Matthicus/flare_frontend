@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import HotFlares from "./HotFlares";
 import MapWrapper from "./MapWrapper";
-import Logo from "./Logo";
+import LoadingScreen from "./LoadingScreen"; // Add this import
 import { useFlares } from "@/hooks/useFlares";
 
 const MainLayout = () => {
@@ -17,7 +17,7 @@ const MainLayout = () => {
   // Handle fly to flare from HotFlares component
   const handleFlyToFlare = (lat: number, lng: number) => {
     console.log("🗺️ Flying to flare:", lat, lng);
-    setFlyToCoords({ lat, lng, zoom: 14 }); // This was missing!
+    setFlyToCoords({ lat, lng, zoom: 14 });
   };
 
   // Add debug logging
@@ -26,9 +26,13 @@ const MainLayout = () => {
   console.log("- Error:", error);
   console.log("- Flares count:", flares.length);
 
+  // Show loading screen while initial data loads
+  if (loading && flares.length === 0) {
+    return <LoadingScreen />;
+  }
+
   return (
     <div className="relative w-screen h-screen">
-      <Logo />
       {/* Show HotFlares when we have data and not loading */}
       {!loading && flares.length > 0 && (
         <HotFlares flares={flares} onFlyToFlare={handleFlyToFlare} />
@@ -43,8 +47,8 @@ const MainLayout = () => {
         removeFlare={removeFlare}
       />
 
-      {/* Optional: Show loading indicator */}
-      {loading && (
+      {/* Optional: Show loading indicator for subsequent loads */}
+      {loading && flares.length > 0 && (
         <div className="fixed bottom-6 right-6 bg-[#192736]/90 text-white p-3 rounded-full shadow-xl z-40">
           <div className="flex items-center space-x-2">
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-yellow-400"></div>

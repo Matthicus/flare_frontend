@@ -13,16 +13,16 @@ const Logo = () => {
     <>
       {/* Logo Button */}
       <div
-        className=" fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-accent-color p-2 rounded-full cursor-pointer hover:scale-110 transition-transform duration-200"
+        className="bg-accent-color p-2 rounded-full cursor-pointer hover:scale-110 transition-transform duration-200"
         style={{ zIndex: 1000 }}
         onClick={openModal}
       >
         <Image
           src="/logo.png"
           alt="logo"
-          width={40}
-          height={40}
-          className="h-10 w-10"
+          width={20}
+          height={20}
+          className="h-6 w-6"
         />
       </div>
 

@@ -11,7 +11,7 @@ export const useFlares = () => {
   // Category determination logic
   const getCategory = (count: number = 0): Flare["category"] => {
     if (count >= 100) return "blue";
-    if (count >= 18) return "violet";
+    if (count >= 2) return "violet";
     return "regular";
   };
 

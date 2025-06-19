@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useContext } from "react";
-import LogoutBtn from "./LogoutBtn";
 import LoginModal from "./LoginModal";
 import { UserContext } from "@/context/UserContext";
 
@@ -11,9 +10,8 @@ const AuthBtns = () => {
 
   return (
     <>
-      {user ? (
-        <LogoutBtn />
-      ) : (
+      {user ? // When logged in, don't show anything - profile pic handles account access
+      null : (
         <>
           <button
             onClick={() => setShowLoginModal(true)}

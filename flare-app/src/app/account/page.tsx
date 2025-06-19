@@ -8,6 +8,7 @@ import {
   deleteProfilePhoto,
   getUserStats,
   getUserFlares,
+  logout,
 } from "@/lib/axios";
 import { UserProfile, UserStats } from "@/types/user";
 import { Flare } from "@/types/flare";
@@ -23,6 +24,7 @@ const AccountPage = () => {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [photoUploading, setPhotoUploading] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   // Edit state
   const [isEditing, setIsEditing] = useState(false);
@@ -87,6 +89,25 @@ const AccountPage = () => {
       setError("Failed to load profile data");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    setError("");
+    setLoggingOut(true);
+    try {
+      await logout();
+      localStorage.removeItem("loggedIn");
+      setUser(null);
+      router.push("/");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Logout failed");
+      }
+    } finally {
+      setLoggingOut(false);
     }
   };
 
@@ -225,7 +246,13 @@ const AccountPage = () => {
             ← Back to Map
           </button>
           <h1 className="text-3xl font-bold text-gray-900">My Account</h1>
-          <div></div>
+          <button
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loggingOut ? "Logging out..." : "Logout"}
+          </button>
         </div>
 
         {/* Messages */}
@@ -412,7 +439,6 @@ const AccountPage = () => {
                     <Image
                       src={profile.profile_photo_url}
                       alt="Profile photo"
-                      fill
                       className="object-cover"
                       width={128}
                       height={128}
