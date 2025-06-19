@@ -13,7 +13,7 @@ const Logo = () => {
     <>
       {/* Logo Button */}
       <div
-        className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-accent-color p-2 rounded-full cursor-pointer hover:scale-110 transition-transform duration-200"
+        className=" fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-accent-color p-2 rounded-full cursor-pointer hover:scale-110 transition-transform duration-200"
         style={{ zIndex: 1000 }}
         onClick={openModal}
       >
@@ -34,7 +34,7 @@ const Logo = () => {
         >
           {/* Modal Content */}
           <div
-            className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-11/12 max-w-2xl max-h-[80vh] overflow-hidden"
+            className="bg-[#FAF9F6] dark:bg-accent-color rounded-xl shadow-2xl w-11/12 max-w-2xl max-h-[80vh] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
@@ -51,21 +51,15 @@ const Logo = () => {
                   Flare
                 </h2>
               </div>
-              <button
-                onClick={closeModal}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl font-bold"
-              >
-                ×
-              </button>
             </div>
 
             {/* Tab Navigation */}
             <div className="flex border-b border-gray-200 dark:border-gray-700">
               <button
                 onClick={() => setActiveTab("about")}
-                className={`flex-1 py-3 px-6 text-center font-medium transition-colors ${
+                className={`flex-1 py-3 px-6 text-center font-medium transition-colors cursor-pointer ${
                   activeTab === "about"
-                    ? "bg-accent-color text-white"
+                    ? "bg-text-orange text-white"
                     : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                 }`}
               >
@@ -73,9 +67,9 @@ const Logo = () => {
               </button>
               <button
                 onClick={() => setActiveTab("usage")}
-                className={`flex-1 py-3 px-6 text-center font-medium transition-colors ${
+                className={`flex-1 py-3 px-6 text-center font-medium transition-colors cursor-pointer ${
                   activeTab === "usage"
-                    ? "bg-accent-color text-white"
+                    ? "bg-text-orange text-white"
                     : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                 }`}
               >
@@ -173,10 +167,10 @@ const Logo = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="flex justify-end p-6 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex justify-end p-3 border-t border-gray-200 dark:border-gray-700">
               <button
                 onClick={closeModal}
-                className="px-6 py-2 bg-accent-color text-white rounded-lg hover:bg-text-orange transition-colors"
+                className="px-6 py-2 bg-accent-color text-white rounded-lg hover:bg-text-orange transition-colors cursor-pointer"
               >
                 Got it!
               </button>

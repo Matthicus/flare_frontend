@@ -18,19 +18,31 @@ const SearchBox = ({ onSelect }: Props) => {
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query) return;
+  useEffect(() => {
+    const fetchResults = async () => {
+      if (!query) {
+        setResults([]);
+        return;
+      }
 
-    const res = await fetch(
-      `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-        query
-      )}.json?access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}`
-    );
+      try {
+        const res = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+            query
+          )}.json?access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}`
+        );
+        const data = await res.json();
+        setResults(data.features as MapboxFeature[]);
+      } catch (error) {
+        console.error("Error fetching geocoding data:", error);
+      }
+    };
 
-    const data = await res.json();
-    setResults(data.features as MapboxFeature[]);
-  };
+    // Debounce the API call by 300ms
+    const timeoutId = setTimeout(fetchResults, 300);
+
+    return () => clearTimeout(timeoutId); // Cleanup on unmount or query change
+  }, [query]);
 
   useEffect(() => {
     if (open && inputRef.current) {
@@ -60,7 +72,7 @@ const SearchBox = ({ onSelect }: Props) => {
 
       {/* Sliding input */}
       <form
-        onSubmit={handleSearch}
+        onSubmit={(e) => e.preventDefault()}
         className={`ml-2 overflow-hidden transition-[width,opacity] duration-300 ease-in-out ${
           open
             ? "w-32 sm:w-72 opacity-100 pointer-events-auto"
@@ -71,7 +83,7 @@ const SearchBox = ({ onSelect }: Props) => {
         <input
           ref={inputRef}
           type="text"
-          className="w-full bg-black/50 border border-gray-700 px-3 py-1 rounded-xl text-white outline-none"
+          className="w-full bg-[#FAF9F6] px-3 py-1 rounded-xl text-black outline-none"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search location"
@@ -80,7 +92,7 @@ const SearchBox = ({ onSelect }: Props) => {
 
       {/* Results dropdown */}
       {open && results.length > 0 && (
-        <ul className="absolute top-full mt-1 left-0 w-48 sm:w-72 bg-[#000718] rounded-xl shadow-lg p-3 max-h-40 overflow-y-auto text-white text-sm">
+        <ul className="absolute top-full mt-3 left-11 w-48 sm:w-72 bg-[#FAF9F6] rounded-xl shadow-lg p-3 max-h-40 overflow-y-auto text-black text-sm">
           {results.map((result) => (
             <li
               key={result.id}

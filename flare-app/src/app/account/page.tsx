@@ -220,7 +220,7 @@ const AccountPage = () => {
         <div className="flex items-center justify-between mb-8">
           <button
             onClick={() => router.push("/")}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 cursor-pointer"
           >
             ← Back to Map
           </button>
@@ -444,7 +444,7 @@ const AccountPage = () => {
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={photoUploading}
-                    className="w-full bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600 disabled:opacity-50"
+                    className="w-full bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600 disabled:opacity-50 cursor-pointer"
                   >
                     {profile.profile_photo_url
                       ? "Change Photo"

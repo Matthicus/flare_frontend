@@ -71,14 +71,30 @@ body {
   animation: pulsate 2s ease-in-out infinite;
 }
 
-/* Custom popup styling that overrides MapBox defaults */
-.flare-popup>div {
-  background: #192736 !important;
-  color: white !important;
+.flare-popup .mapboxgl-popup-content {
+  padding: 0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  border: none !important;
+  background: transparent !important;
 }
 
-.mapboxgl-popup-close-button {
-  font-size: 24px !important;
-  top: 8px !important;
-  right: 10px !important;
+.flare-popup .mapboxgl-popup-tip {
+  border-top-color: #FAF9F6 !important;
+  border-left-color: transparent !important;
+  border-right-color: transparent !important;
+  border-bottom-color: transparent !important;
+}
+
+/* Dark mode tip */
+@media (prefers-color-scheme: dark) {
+  .flare-popup .mapboxgl-popup-tip {
+    border-top-color: var(--accent-color) !important;
+  }
+}
+
+/* Remove any default border or outline on the tip */
+.flare-popup .mapboxgl-popup-tip {
+  border-width: 8px 8px 0 8px !important;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1)) !important;
 }

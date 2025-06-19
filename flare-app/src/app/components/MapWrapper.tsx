@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { UserContext } from "@/context/UserContext";
 import Image from "next/image";
 import { Flare } from "@/types/flare";
+import Logo from "./Logo";
 
 type MapWrapperProps = {
   flyToCoords?: { lat: number; lng: number; zoom: number } | null;

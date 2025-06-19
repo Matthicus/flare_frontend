@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import HotFlares from "./HotFlares";
-import Logo from "./Logo";
 import MapWrapper from "./MapWrapper";
+import Logo from "./Logo";
 import { useFlares } from "@/hooks/useFlares";
 
 const MainLayout = () => {
@@ -29,7 +29,6 @@ const MainLayout = () => {
   return (
     <div className="relative w-screen h-screen">
       <Logo />
-
       {/* Show HotFlares when we have data and not loading */}
       {!loading && flares.length > 0 && (
         <HotFlares flares={flares} onFlyToFlare={handleFlyToFlare} />
