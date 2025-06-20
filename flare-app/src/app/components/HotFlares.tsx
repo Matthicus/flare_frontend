@@ -153,24 +153,24 @@ const HotFlares = ({ flares, onFlyToFlare }: HotFlaresProps) => {
               className="fixed inset-0 bg-black/30 z-[1000]"
               onClick={() => setIsExpanded(false)}
             />
-            <div className="fixed bottom-6 right-6 bg-[#192736]/95 text-white rounded-xl shadow-xl z-[1001] max-h-[80vh] w-96">
-              <div className="flex justify-between items-center p-4 border-b border-gray-600">
-                <h2 className="text-lg font-bold text-yellow-400">🔥 Flares</h2>
+            <div className="fixed bottom-6 right-6 bg-[#FAF9F6] text-gray-900 rounded-xl shadow-xl border border-gray-200 z-[1001] max-h-[80vh] w-96">
+              <div className="flex justify-between items-center p-4 border-b border-gray-300">
+                <h2 className="text-lg font-bold text-orange-600">🔥 Flares</h2>
                 <button
                   onClick={() => setIsExpanded(false)}
-                  className="text-white text-2xl p-1 hover:text-orange-400 cursor-pointer"
+                  className="text-gray-600 text-2xl p-1 hover:text-orange-600 cursor-pointer"
                 >
                   ×
                 </button>
               </div>
 
-              <div className="flex border-b border-gray-600">
+              <div className="flex border-b border-gray-300">
                 <button
                   onClick={() => setActiveTab("hot")}
                   className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
                     activeTab === "hot"
-                      ? "text-yellow-400 border-b-2 border-yellow-400 bg-gray-800/50"
-                      : "text-gray-300 hover:text-white hover:bg-gray-800/30"
+                      ? "text-orange-600 border-b-2 border-orange-600 bg-orange-50"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                   }`}
                 >
                   Hot Flares
@@ -184,8 +184,8 @@ const HotFlares = ({ flares, onFlyToFlare }: HotFlaresProps) => {
                   onClick={() => setActiveTab("all")}
                   className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
                     activeTab === "all"
-                      ? "text-yellow-400 border-b-2 border-yellow-400 bg-gray-800/50"
-                      : "text-gray-300 hover:text-white hover:bg-gray-800/30"
+                      ? "text-orange-600 border-b-2 border-orange-600 bg-orange-50"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                   }`}
                 >
                   All Flares
@@ -197,7 +197,7 @@ const HotFlares = ({ flares, onFlyToFlare }: HotFlaresProps) => {
 
               <div className="overflow-y-auto p-2 max-h-[calc(80vh-140px)]">
                 {displayFlares.length === 0 ? (
-                  <div className="p-4 text-center text-gray-400">
+                  <div className="p-4 text-center text-gray-500">
                     {activeTab === "hot"
                       ? "No hot flares right now 🥶"
                       : "No flares found"}
@@ -207,7 +207,7 @@ const HotFlares = ({ flares, onFlyToFlare }: HotFlaresProps) => {
                     {displayFlares.map((flare, i) => (
                       <div
                         key={flare.id ?? i}
-                        className="w-full h-24 p-3 bg-gray-800 rounded-lg hover:bg-gray-700 cursor-pointer transition-all hover:scale-[1.02] relative overflow-hidden group"
+                        className="w-full h-24 p-3 bg-white rounded-lg hover:bg-gray-50 cursor-pointer transition-all hover:scale-[1.02] relative overflow-hidden group border border-gray-200 shadow-sm"
                         onClick={() => {
                           onFlyToFlare?.(flare.latitude, flare.longitude);
                           setIsExpanded(false);
@@ -215,7 +215,7 @@ const HotFlares = ({ flares, onFlyToFlare }: HotFlaresProps) => {
                       >
                         {/* Background gradient */}
                         <div className="absolute inset-0 opacity-5">
-                          <div className="w-full h-full bg-gradient-to-r from-yellow-400 to-orange-500" />
+                          <div className="w-full h-full bg-gradient-to-r from-orange-400 to-red-500" />
                         </div>
 
                         {/* Top badges */}
@@ -242,11 +242,11 @@ const HotFlares = ({ flares, onFlyToFlare }: HotFlaresProps) => {
                         <div className="relative z-10 h-full flex flex-col justify-between">
                           {/* Top section */}
                           <div className="flex-1">
-                            <h3 className="font-bold text-white text-sm leading-tight mb-1 line-clamp-2 pr-16">
+                            <h3 className="font-bold text-gray-900 text-sm leading-tight mb-1 line-clamp-2 pr-16">
                               {flare.note}
                             </h3>
 
-                            <div className="flex items-center text-xs text-gray-300">
+                            <div className="flex items-center text-xs text-gray-600">
                               <span className="mr-1">📍</span>
                               <span className="truncate">
                                 {flare.place?.name ?? "Unknown"}
@@ -257,7 +257,7 @@ const HotFlares = ({ flares, onFlyToFlare }: HotFlaresProps) => {
                           {/* Bottom metadata */}
                           <div className="flex items-center justify-between text-xs">
                             <div className="flex items-center gap-4">
-                              <span className="text-purple-400 flex items-center">
+                              <span className="text-purple-600 flex items-center">
                                 <span className="mr-1">👥</span>
                                 {flare.participantsCount ?? 0}
                               </span>
@@ -265,8 +265,8 @@ const HotFlares = ({ flares, onFlyToFlare }: HotFlaresProps) => {
                               <span
                                 className={`flex items-center ${
                                   getDisplayUsername(flare) === "You"
-                                    ? "text-green-400"
-                                    : "text-blue-400"
+                                    ? "text-green-600"
+                                    : "text-blue-600"
                                 }`}
                               >
                                 <span className="mr-1">👤</span>
@@ -274,7 +274,7 @@ const HotFlares = ({ flares, onFlyToFlare }: HotFlaresProps) => {
                               </span>
                             </div>
 
-                            <span className="text-gray-400 flex items-center">
+                            <span className="text-gray-500 flex items-center">
                               <span className="mr-1">⏱️</span>
                               {formatTimeAgo(flare.created_at)}
                             </span>
@@ -293,7 +293,7 @@ const HotFlares = ({ flares, onFlyToFlare }: HotFlaresProps) => {
       {/* Mobile bottom sheet */}
       <div className="md:hidden">
         <div
-          className="fixed bottom-0 left-0 right-0 bg-[#192736]/95 text-white rounded-t-xl shadow-xl z-[1001]"
+          className="fixed bottom-0 left-0 right-0 bg-[#FAF9F6] text-gray-900 rounded-t-xl shadow-xl border-t border-gray-200 z-[1001]"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -305,22 +305,22 @@ const HotFlares = ({ flares, onFlyToFlare }: HotFlaresProps) => {
             minHeight: "100px",
           }}
         >
-          <div className="p-4 border-b border-gray-600/50 cursor-grab active:cursor-grabbing">
+          <div className="p-4 border-b border-gray-300 cursor-grab active:cursor-grabbing">
             <div className="flex justify-center mb-3">
               <div className="w-10 h-1 bg-gray-400 rounded-full" />
             </div>
-            <h2 className="text-lg font-bold text-yellow-400 text-center">
+            <h2 className="text-lg font-bold text-orange-600 text-center">
               🔥 Flares
             </h2>
           </div>
 
-          <div className="flex border-b border-gray-600">
+          <div className="flex border-b border-gray-300">
             <button
               onClick={() => setActiveTab("hot")}
               className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
                 activeTab === "hot"
-                  ? "text-yellow-400 border-b-2 border-yellow-400 bg-gray-800/50"
-                  : "text-gray-300 hover:text-white hover:bg-gray-800/30"
+                  ? "text-orange-600 border-b-2 border-orange-600 bg-orange-50"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
               }`}
             >
               Hot Flares
@@ -334,8 +334,8 @@ const HotFlares = ({ flares, onFlyToFlare }: HotFlaresProps) => {
               onClick={() => setActiveTab("all")}
               className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
                 activeTab === "all"
-                  ? "text-yellow-400 border-b-2 border-yellow-400 bg-gray-800/50"
-                  : "text-gray-300 hover:text-white hover:bg-gray-800/30"
+                  ? "text-orange-600 border-b-2 border-orange-600 bg-orange-50"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
               }`}
             >
               All Flares
@@ -345,19 +345,19 @@ const HotFlares = ({ flares, onFlyToFlare }: HotFlaresProps) => {
             </button>
           </div>
 
-          <div className="overflow-y-auto p-2 flex-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="overflow-y-auto p-2 flex-1 max-h-[calc(100vh-200px)] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {displayFlares.length === 0 ? (
-              <div className="p-4 text-center text-gray-400">
+              <div className="p-4 text-center text-gray-500">
                 {activeTab === "hot"
                   ? "No hot flares right now 🥶"
                   : "No flares found"}
               </div>
             ) : (
-              <div className="space-y-2 pb-safe">
+              <div className="space-y-2 pb-20">
                 {displayFlares.map((flare, i) => (
                   <div
                     key={flare.id ?? i}
-                    className="w-full h-24 p-3 bg-gray-800 rounded-lg hover:bg-gray-700 cursor-pointer transition-all hover:scale-[1.02] relative overflow-hidden group"
+                    className="w-full h-24 p-3 bg-white rounded-lg hover:bg-gray-50 cursor-pointer transition-all hover:scale-[1.02] relative overflow-hidden group border border-gray-200 shadow-sm"
                     onClick={() => {
                       onFlyToFlare?.(flare.latitude, flare.longitude);
                       setIsExpanded(false);
@@ -365,7 +365,7 @@ const HotFlares = ({ flares, onFlyToFlare }: HotFlaresProps) => {
                   >
                     {/* Background gradient */}
                     <div className="absolute inset-0 opacity-5">
-                      <div className="w-full h-full bg-gradient-to-r from-yellow-400 to-orange-500" />
+                      <div className="w-full h-full bg-gradient-to-r from-orange-400 to-red-500" />
                     </div>
 
                     {/* Top badges */}
@@ -392,11 +392,11 @@ const HotFlares = ({ flares, onFlyToFlare }: HotFlaresProps) => {
                     <div className="relative z-10 h-full flex flex-col justify-between">
                       {/* Top section */}
                       <div className="flex-1">
-                        <h3 className="font-bold text-white text-sm leading-tight mb-1 line-clamp-2 pr-16">
+                        <h3 className="font-bold text-gray-900 text-sm leading-tight mb-1 line-clamp-2 pr-16">
                           {flare.note}
                         </h3>
 
-                        <div className="flex items-center text-xs text-gray-300">
+                        <div className="flex items-center text-xs text-gray-600">
                           <span className="mr-1">📍</span>
                           <span className="truncate">
                             {flare.place?.name ?? "Unknown"}
@@ -407,7 +407,7 @@ const HotFlares = ({ flares, onFlyToFlare }: HotFlaresProps) => {
                       {/* Bottom metadata */}
                       <div className="flex items-center justify-between text-xs">
                         <div className="flex items-center gap-4">
-                          <span className="text-purple-400 flex items-center">
+                          <span className="text-purple-600 flex items-center">
                             <span className="mr-1">👥</span>
                             {flare.participantsCount ?? 0}
                           </span>
@@ -415,8 +415,8 @@ const HotFlares = ({ flares, onFlyToFlare }: HotFlaresProps) => {
                           <span
                             className={`flex items-center ${
                               getDisplayUsername(flare) === "You"
-                                ? "text-green-400"
-                                : "text-blue-400"
+                                ? "text-green-600"
+                                : "text-blue-600"
                             }`}
                           >
                             <span className="mr-1">👤</span>
@@ -424,7 +424,7 @@ const HotFlares = ({ flares, onFlyToFlare }: HotFlaresProps) => {
                           </span>
                         </div>
 
-                        <span className="text-gray-400 flex items-center">
+                        <span className="text-gray-500 flex items-center">
                           <span className="mr-1">⏱️</span>
                           {formatTimeAgo(flare.created_at)}
                         </span>
