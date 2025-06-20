@@ -1,33 +1,7 @@
 "use client";
 import React, { useState, useRef, useContext } from "react";
 import { UserContext } from "@/context/UserContext";
-
-export type Flare = {
-  id?: number;
-  user_id?: number;
-  latitude: number;
-  longitude: number;
-  note: string;
-  category: "regular" | "blue" | "violet";
-  participantsCount?: number;
-  place?: {
-    name: string;
-  } | null;
-  photo_url?: string | null;
-  photo_path?: string | null;
-  user?: {
-    id: number;
-    name: string;
-    email: string;
-    username: string;
-    profile_photo_url?: string | null;
-    profile_photo_path?: string | null;
-  };
-  user_display_name?: string;
-  user_profile_photo_url?: string | null;
-  created_at?: string;
-  updated_at?: string;
-};
+import { Flare } from "@/types/flare";
 
 type HotFlaresProps = {
   flares: Flare[];
@@ -229,11 +203,11 @@ const HotFlares = ({ flares, onFlyToFlare }: HotFlaresProps) => {
                       : "No flares found"}
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-2">
                     {displayFlares.map((flare, i) => (
                       <div
                         key={flare.id ?? i}
-                        className="aspect-square p-3 bg-gray-800 rounded-lg hover:bg-gray-700 cursor-pointer transition-all hover:scale-105 relative overflow-hidden group"
+                        className="w-full h-24 p-3 bg-gray-800 rounded-lg hover:bg-gray-700 cursor-pointer transition-all hover:scale-[1.02] relative overflow-hidden group"
                         onClick={() => {
                           onFlyToFlare?.(flare.latitude, flare.longitude);
                           setIsExpanded(false);
@@ -241,7 +215,7 @@ const HotFlares = ({ flares, onFlyToFlare }: HotFlaresProps) => {
                       >
                         {/* Background gradient */}
                         <div className="absolute inset-0 opacity-5">
-                          <div className="w-full h-full bg-gradient-to-br from-yellow-400 to-orange-500" />
+                          <div className="w-full h-full bg-gradient-to-r from-yellow-400 to-orange-500" />
                         </div>
 
                         {/* Top badges */}
@@ -266,43 +240,44 @@ const HotFlares = ({ flares, onFlyToFlare }: HotFlaresProps) => {
 
                         {/* Main content */}
                         <div className="relative z-10 h-full flex flex-col justify-between">
-                          {/* Center content */}
-                          <div className="flex-1 flex flex-col justify-center">
-                            <h3 className="font-bold text-white text-sm leading-tight mb-3 line-clamp-3">
+                          {/* Top section */}
+                          <div className="flex-1">
+                            <h3 className="font-bold text-white text-sm leading-tight mb-1 line-clamp-2 pr-16">
                               {flare.note}
                             </h3>
 
-                            <div className="flex items-center text-xs text-gray-300 mb-2">
+                            <div className="flex items-center text-xs text-gray-300">
                               <span className="mr-1">📍</span>
-                              <span className="truncate text-xs">
+                              <span className="truncate">
                                 {flare.place?.name ?? "Unknown"}
                               </span>
                             </div>
                           </div>
 
                           {/* Bottom metadata */}
-                          <div className="space-y-1">
-                            <div className="flex items-center justify-between text-xs">
+                          <div className="flex items-center justify-between text-xs">
+                            <div className="flex items-center gap-4">
                               <span className="text-purple-400 flex items-center">
                                 <span className="mr-1">👥</span>
                                 {flare.participantsCount ?? 0}
                               </span>
-                              <span className="text-gray-400 flex items-center">
-                                <span className="mr-1">⏱️</span>
-                                {formatTimeAgo(flare.created_at)}
+
+                              <span
+                                className={`flex items-center ${
+                                  getDisplayUsername(flare) === "You"
+                                    ? "text-green-400"
+                                    : "text-blue-400"
+                                }`}
+                              >
+                                <span className="mr-1">👤</span>
+                                {getDisplayUsername(flare)}
                               </span>
                             </div>
 
-                            <div
-                              className={`text-xs font-medium flex items-center ${
-                                getDisplayUsername(flare) === "You"
-                                  ? "text-green-400"
-                                  : "text-blue-400"
-                              }`}
-                            >
-                              <span className="mr-1">👤</span>
-                              {getDisplayUsername(flare)}
-                            </div>
+                            <span className="text-gray-400 flex items-center">
+                              <span className="mr-1">⏱️</span>
+                              {formatTimeAgo(flare.created_at)}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -378,11 +353,11 @@ const HotFlares = ({ flares, onFlyToFlare }: HotFlaresProps) => {
                   : "No flares found"}
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-2 pb-safe">
+              <div className="space-y-2 pb-safe">
                 {displayFlares.map((flare, i) => (
                   <div
                     key={flare.id ?? i}
-                    className="aspect-square p-3 bg-gray-800 rounded-lg hover:bg-gray-700 cursor-pointer transition-all hover:scale-105 relative overflow-hidden group"
+                    className="w-full h-24 p-3 bg-gray-800 rounded-lg hover:bg-gray-700 cursor-pointer transition-all hover:scale-[1.02] relative overflow-hidden group"
                     onClick={() => {
                       onFlyToFlare?.(flare.latitude, flare.longitude);
                       setIsExpanded(false);
@@ -390,7 +365,7 @@ const HotFlares = ({ flares, onFlyToFlare }: HotFlaresProps) => {
                   >
                     {/* Background gradient */}
                     <div className="absolute inset-0 opacity-5">
-                      <div className="w-full h-full bg-gradient-to-br from-yellow-400 to-orange-500" />
+                      <div className="w-full h-full bg-gradient-to-r from-yellow-400 to-orange-500" />
                     </div>
 
                     {/* Top badges */}
@@ -415,43 +390,44 @@ const HotFlares = ({ flares, onFlyToFlare }: HotFlaresProps) => {
 
                     {/* Main content */}
                     <div className="relative z-10 h-full flex flex-col justify-between">
-                      {/* Center content */}
-                      <div className="flex-1 flex flex-col justify-center">
-                        <h3 className="font-bold text-white text-sm leading-tight mb-3 line-clamp-3">
+                      {/* Top section */}
+                      <div className="flex-1">
+                        <h3 className="font-bold text-white text-sm leading-tight mb-1 line-clamp-2 pr-16">
                           {flare.note}
                         </h3>
 
-                        <div className="flex items-center text-xs text-gray-300 mb-2">
+                        <div className="flex items-center text-xs text-gray-300">
                           <span className="mr-1">📍</span>
-                          <span className="truncate text-xs">
+                          <span className="truncate">
                             {flare.place?.name ?? "Unknown"}
                           </span>
                         </div>
                       </div>
 
                       {/* Bottom metadata */}
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-4">
                           <span className="text-purple-400 flex items-center">
                             <span className="mr-1">👥</span>
                             {flare.participantsCount ?? 0}
                           </span>
-                          <span className="text-gray-400 flex items-center">
-                            <span className="mr-1">⏱️</span>
-                            {formatTimeAgo(flare.created_at)}
+
+                          <span
+                            className={`flex items-center ${
+                              getDisplayUsername(flare) === "You"
+                                ? "text-green-400"
+                                : "text-blue-400"
+                            }`}
+                          >
+                            <span className="mr-1">👤</span>
+                            {getDisplayUsername(flare)}
                           </span>
                         </div>
 
-                        <div
-                          className={`text-xs font-medium flex items-center ${
-                            getDisplayUsername(flare) === "You"
-                              ? "text-green-400"
-                              : "text-blue-400"
-                          }`}
-                        >
-                          <span className="mr-1">👤</span>
-                          {getDisplayUsername(flare)}
-                        </div>
+                        <span className="text-gray-400 flex items-center">
+                          <span className="mr-1">⏱️</span>
+                          {formatTimeAgo(flare.created_at)}
+                        </span>
                       </div>
                     </div>
                   </div>
